@@ -1,44 +1,39 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from app.routes.launch import router as launch_router
 from app.routes.audit import router as audit_router
+from app.routes.kits import router as kits_router
+from app.routes.checkout import router as checkout_router
+from app.routes.delivery import router as delivery_router
+from app.routes.admin import router as admin_router
 
-app = FastAPI(title="Home Health Launch Compliance Tool")
+app = FastAPI(title="Home Health Startup Risk Intelligence")
 
 app.include_router(launch_router)
 app.include_router(audit_router)
-from app.routes.kits import router as kits_router
 app.include_router(kits_router)
-from app.routes.checkout import router as checkout_router
 app.include_router(checkout_router)
-from app.routes.delivery import router as delivery_router
 app.include_router(delivery_router)
-from app.routes.admin import router as admin_router
 app.include_router(admin_router)
-from app.routes.payment import router as payment_router
-app.include_router(payment_router)
-from app.routes.success import router as success_router
-app.include_router(success_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
-    <!DOCTYPE html>
     <html>
-    <head>
-        <title>Home Health Launch Compliance Tool</title>
-        <style>
-            body { font-family: Arial; background:#f4f6f8; padding:40px; }
-            .card { background:white; padding:30px; border-radius:12px; max-width:900px; margin:auto; box-shadow:0 4px 14px rgba(0,0,0,.08); }
-            a { display:inline-block; margin:10px 10px 0 0; padding:12px 18px; background:#2563eb; color:white; text-decoration:none; border-radius:8px; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h1>Home Health Launch Compliance Tool</h1>
-            <p>Virginia MVP: launch roadmap, compliance categories, risk flags, and startup readiness audit.</p>
-            <a href="/launch/virginia">View Virginia Compliance Data</a>
-            <a href="/audit/">Run Startup Compliance Audit</a><a href="/kits/">Startup Completion Kits</a>
+    <body style="font-family:Arial;background:#0f172a;color:white;padding:50px;">
+        <div style="max-width:950px;margin:auto;">
+            <h1 style="font-size:44px;">Home Health Startup Risk Intelligence</h1>
+            <p style="font-size:20px;color:#cbd5e1;">
+                Diagnose licensing, compliance, staffing, and operational risks before your agency launches.
+            </p>
+
+            <div style="background:white;color:#111827;padding:30px;border-radius:16px;margin-top:30px;">
+                <h2>Know what could delay your launch before it costs you time and money.</h2>
+                <p>Our system analyzes startup readiness and generates a structured risk report with recommended next actions.</p>
+
+                <a href="/audit/" style="background:#2563eb;color:white;padding:14px 20px;text-decoration:none;border-radius:8px;">Run Startup Risk Audit</a>
+                <a href="/kits/" style="background:#111827;color:white;padding:14px 20px;text-decoration:none;border-radius:8px;margin-left:10px;">View Completion Kits</a>
+            </div>
         </div>
     </body>
     </html>
