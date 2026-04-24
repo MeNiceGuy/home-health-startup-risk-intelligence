@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from app.routes.launch import router as launch_router
 from app.routes.audit import router as audit_router
@@ -7,7 +8,7 @@ from app.routes.checkout import router as checkout_router
 from app.routes.delivery import router as delivery_router
 from app.routes.admin import router as admin_router
 
-app = FastAPI(title="Home Health Startup Risk Intelligence")
+app = FastAPI(title="Home Health Startup Risk Intelligence")`napp.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(launch_router)
 app.include_router(audit_router)
@@ -22,7 +23,7 @@ def home():
     <html>
     <body style="font-family:Arial;background:#0f172a;color:white;padding:50px;">
         <div style="max-width:950px;margin:auto;">
-            <h1 style="font-size:44px;">Home Health Startup Risk Intelligence</h1>
+            <img src="/static/logo.png" style="width:300px;margin-bottom:20px;background:white;padding:10px;border-radius:12px;"><h1 style="font-size:44px;">Home Health Startup Risk Intelligence</h1>
             <p style="font-size:20px;color:#cbd5e1;">
                 Diagnose licensing, compliance, staffing, and operational risks before your agency launches.
             </p>
