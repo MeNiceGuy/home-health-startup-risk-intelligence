@@ -16,7 +16,7 @@ def create_subscription_checkout():
             },
             "quantity": 1
         }],
-        success_url="https://home-health-startup-risk-intelligence.onrender.com/dashboard/",
+        success_url="https://home-health-startup-risk-intelligence.onrender.com/subscribe/success?session_id={CHECKOUT_SESSION_ID}",
         cancel_url="https://home-health-startup-risk-intelligence.onrender.com/operating-audit/"
     )
     return session.url

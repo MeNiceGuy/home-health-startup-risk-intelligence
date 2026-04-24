@@ -1,5 +1,5 @@
 ﻿from fastapi import APIRouter, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse`nfrom app.services.saas_tracking import save_intelligence_score
 
 router = APIRouter(prefix="/operating-audit", tags=["Operating Intelligence"])
 
@@ -60,7 +60,7 @@ def run(
     revenue = score_section([payer, referral])
     operations = score_section([intake, qa])
 
-    total = int((compliance + clinical + revenue + operations) / 4)
+    total = int((compliance + clinical + revenue + operations) / 4)`n    save_intelligence_score("Operating Agency", "Operating Audit", total, compliance, clinical, revenue, operations)
 
     if total >= 80:
         tier = "Strong Operating Position"
