@@ -1,114 +1,167 @@
 ﻿from fastapi import APIRouter, Form
-from fastapi.responses import HTMLResponse, FileResponse
-from app.services.risk_engine import calculate_risk_score
-from app.services.fix_engine import get_fix_instructions
-from app.services.pdf_engine import generate_audit_pdf
-from app.services.kit_mapper import KIT_MAP
+from fastapi.responses import HTMLResponse
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
-@router.get("/", response_class=HTMLResponse)
-def audit_form():
-    return """
-    <html>
-    <body style="font-family:Arial;background:#f8fafc;padding:40px;">
-        <h1>Boswell Consulting Group Startup Intelligence Audit</h1>
-        <p>Professional intake layout restored. Full styled version comes next after logic is protected.</p>
-        <form method="post" action="/audit/run">
-            Agency Name:<br><input name="agency_name"><br><br>
-            Owner Name:<br><input name="owner_name"><br><br>
-            City / County:<br><input name="location"><br><br>
-            Target Start Date:<br><input type="date" name="start_date"><br><br>
-
-            Business Entity Formed?<br><select name="business_registered"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-            EIN Obtained?<br><select name="ein_obtained"><option value="no">No</option><option value="yes">Yes</option></select><br><br>
-            Licensing Documents Prepared?<br><select name="license_docs_ready"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-            Inspection Requirements Reviewed?<br><select name="inspection_ready"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-
-            RN Clinical Supervisor Secured?<br><select name="rn_secured"><option value="no">No</option><option value="contracted">Contracted</option><option value="yes">Yes</option></select><br><br>
-            Clinical Leadership Qualified?<br><select name="clinical_qualified"><option value="no">No</option><option value="unknown">Unknown</option><option value="yes">Yes</option></select><br><br>
-
-            Patient Intake Process?<br><select name="intake_process"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-            Documentation System?<br><select name="documentation_system"><option value="no">No</option><option value="evaluating">Evaluating</option><option value="yes">Yes</option></select><br><br>
-
-            Payer Strategy?<br><select name="revenue_model"><option value="no">No</option><option value="private_pay">Private Pay</option><option value="medicaid">Medicaid</option><option value="medicare">Medicare</option><option value="hybrid">Hybrid</option></select><br><br>
-            Reimbursement Timeline?<br><select name="revenue_timeline"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-
-            Policies Ready?<br><select name="policies_ready"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-            HIPAA System?<br><select name="hipaa_system"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-            QA Process?<br><select name="qa_process"><option value="no">No</option><option value="partial">Partial</option><option value="yes">Yes</option></select><br><br>
-
-            <button type="submit">Run Intelligence Audit</button>
-        </form>
-    </body>
-    </html>
+def field(label, name, options, tip):
+    opts = "".join([f'<option value="{v}">{t}</option>' for v,t in options])
+    return f"""
+    <div class="field">
+        <label>{label} <span class="tip" data-tip="{tip}">?</span></label>
+        <select name="{name}">{opts}</select>
+    </div>
     """
 
-@router.post("/run", response_class=HTMLResponse)
-def run_audit(
-    agency_name: str = Form("N/A"),
-    owner_name: str = Form("N/A"),
-    location: str = Form("N/A"),
-    start_date: str = Form("N/A"),
-    business_registered: str = Form(...),
-    ein_obtained: str = Form(...),
-    license_docs_ready: str = Form(...),
-    inspection_ready: str = Form(...),
-    rn_secured: str = Form(...),
-    clinical_qualified: str = Form(...),
-    intake_process: str = Form(...),
-    documentation_system: str = Form(...),
-    revenue_model: str = Form(...),
-    revenue_timeline: str = Form(...),
-    policies_ready: str = Form(...),
-    hipaa_system: str = Form(...),
-    qa_process: str = Form(...)
-):
-    answers = {
-        "business_registered": business_registered,
-        "ein_obtained": ein_obtained,
-        "license_docs_ready": license_docs_ready,
-        "inspection_ready": inspection_ready,
-        "rn_secured": rn_secured,
-        "clinical_qualified": clinical_qualified,
-        "intake_process": intake_process,
-        "documentation_system": documentation_system,
-        "revenue_model": revenue_model,
-        "revenue_timeline": revenue_timeline,
-        "policies_ready": policies_ready,
-        "hipaa_system": hipaa_system,
-        "qa_process": qa_process
-    }
+@router.get("/", response_class=HTMLResponse)
+def audit_form():
 
-    result = calculate_risk_score(answers)
-    fixes = get_fix_instructions(result["missing_items"])
-    pdf_path = generate_audit_pdf(result, fixes, agency_name, owner_name, location, start_date)
-
-    kits_html = ""
-    for item in result["missing_items"]:
-        for key in KIT_MAP:
-            if key in item:
-                kits_html += f'<li><a href="/kits/{KIT_MAP[key]}">Fix this: {item}</a></li>'
+    yn = [("no","No"),("yes","Yes")]
+    ypn = [("no","No"),("partial","Partial"),("yes","Yes")]
 
     return f"""
     <html>
-    <body style="font-family:Arial;padding:40px;">
-        <h1>Startup Risk Assessment Complete</h1>
-        <p><strong>{agency_name}</strong> | {location}</p>
-        <p>Score: {result["risk_score"]}/100 ({result["risk_tier"]})</p>
+    <head>
+    <style>
+        body {{
+            font-family: Arial;
+            background:#f8fafc;
+            margin:0;
+            padding:0;
+        }}
 
-        <h2>Download Your Report</h2>
-        <a href="/audit/download?file={pdf_path}">Download Report</a>
+        .container {{
+            max-width:1100px;
+            margin:40px auto;
+            padding:20px;
+        }}
 
-        <h2>Recommended Solutions</h2>
-        <ul>{kits_html}</ul>
+        .card {{
+            background:white;
+            padding:25px;
+            border-radius:14px;
+            margin-bottom:20px;
+            box-shadow:0 6px 18px rgba(0,0,0,0.08);
+        }}
 
-        <br>
-        <a href="/audit/">Run Again</a>
+        h1 {{
+            margin-bottom:10px;
+        }}
+
+        .grid {{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:18px;
+        }}
+
+        .field label {{
+            font-weight:bold;
+            display:block;
+            margin-bottom:6px;
+        }}
+
+        select, input {{
+            width:100%;
+            padding:10px;
+            border-radius:8px;
+            border:1px solid #cbd5e1;
+        }}
+
+        .tip {{
+            background:#2563eb;
+            color:white;
+            border-radius:50%;
+            padding:2px 6px;
+            font-size:12px;
+            margin-left:6px;
+            cursor:pointer;
+            position:relative;
+        }}
+
+        .tip:hover::after {{
+            content:attr(data-tip);
+            position:absolute;
+            left:20px;
+            top:-5px;
+            width:260px;
+            background:#0f172a;
+            color:white;
+            padding:10px;
+            border-radius:8px;
+            font-size:13px;
+            z-index:999;
+        }}
+
+        button {{
+            background:#2563eb;
+            color:white;
+            padding:14px 20px;
+            border:none;
+            border-radius:10px;
+            font-weight:bold;
+            cursor:pointer;
+        }}
+    </style>
+    </head>
+
+    <body>
+    <div class="container">
+
+        <div class="card">
+            <h1>Boswell Consulting Group Startup Intelligence Audit</h1>
+            <p>Diagnose licensing, staffing, compliance, and revenue risks before launch.</p>
+        </div>
+
+        <form method="post" action="/audit/run">
+
+            <div class="card">
+                <h2>Client Information</h2>
+                <div class="grid">
+                    <div><label>Agency Name</label><input name="agency_name"></div>
+                    <div><label>Owner Name</label><input name="owner_name"></div>
+                    <div><label>City / County</label><input name="location"></div>
+                    <div><label>Target Start Date</label><input type="date" name="start_date"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Licensing</h2>
+                <div class="grid">
+                    {field("Business Entity Formed?", "business_registered", ypn, "LLC or corporation registered with the state")}
+                    {field("EIN Obtained?", "ein_obtained", yn, "Federal tax ID from IRS")}
+                    {field("License Type Identified?", "license_type_identified", ypn, "Home care vs home health")}
+                    {field("Documents Prepared?", "license_docs_ready", ypn, "All paperwork ready for submission")}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Clinical</h2>
+                <div class="grid">
+                    {field("RN Supervisor Secured?", "rn_secured", [("no","No"),("contracted","Contracted"),("yes","Yes")], "RN required for oversight")}
+                    {field("Leadership Qualified?", "clinical_qualified", [("no","No"),("unknown","Unknown"),("yes","Yes")], "Meets state requirements")}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Revenue</h2>
+                <div class="grid">
+                    {field("Payer Strategy?", "revenue_model", [("no","No"),("private","Private Pay"),("medicaid","Medicaid"),("medicare","Medicare")], "How you get paid")}
+                    {field("Reimbursement Timeline?", "revenue_timeline", ypn, "When money comes in")}
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Compliance</h2>
+                <div class="grid">
+                    {field("Policies Ready?", "policies_ready", ypn, "Required documentation")}
+                    {field("HIPAA System?", "hipaa_system", ypn, "Secure patient data handling")}
+                </div>
+            </div>
+
+            <button type="submit">Run Intelligence Audit</button>
+
+        </form>
+
+    </div>
     </body>
     </html>
     """
-
-@router.get("/download")
-def download_pdf(file: str):
-    return FileResponse(file, filename=file.split("\\")[-1])
