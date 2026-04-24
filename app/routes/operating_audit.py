@@ -92,6 +92,17 @@ def run(
         </p>
 
         <h2>Recommended Actions</h2>
+<h3>Fix These Now:</h3>
+<ul>
+<li><a href="/ops-checkout/compliance-system">Fix Compliance System ($149)</a></li>
+<li><a href="/ops-checkout/qa-system">Fix QA System ($199)</a></li>
+<li><a href="/ops-checkout/revenue-system">Fix Revenue System ($249)</a></li>
+<li><a href="/ops-checkout/full-ops">Full Operating System ($799)</a></li>
+</ul>
+
+<h2>Upgrade to Monthly Intelligence</h2>
+<a href="/subscribe/" style="background:#22c55e;color:#052e16;padding:14px 20px;text-decoration:none;border-radius:8px;">Start Monthly Subscription ($99/mo)</a>
+
         <ul>
             <li>Implement structured QA audits</li>
             <li>Track payer + referral performance</li>

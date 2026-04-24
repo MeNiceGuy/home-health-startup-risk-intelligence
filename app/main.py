@@ -25,7 +25,7 @@ app.include_router(download_router)
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(dashboard_router)
-app.include_router(operating_audit_router)
+app.include_router(operating_audit_router)`nfrom app.routes.ops_checkout import router as ops_checkout_router`nfrom app.routes.subscription import router as subscription_router`napp.include_router(ops_checkout_router)`napp.include_router(subscription_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():
