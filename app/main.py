@@ -12,8 +12,11 @@ from app.routes.admin import router as admin_router
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.operating_audit import router as operating_audit_router
+from app.routes.ops_checkout import router as ops_checkout_router
+from app.routes.subscription import router as subscription_router
 
 app = FastAPI(title="Boswell Consulting Group")
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(launch_router)
@@ -25,7 +28,9 @@ app.include_router(download_router)
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(dashboard_router)
-app.include_router(operating_audit_router)`nfrom app.routes.ops_checkout import router as ops_checkout_router`nfrom app.routes.subscription import router as subscription_router`napp.include_router(ops_checkout_router)`napp.include_router(subscription_router)
+app.include_router(operating_audit_router)
+app.include_router(ops_checkout_router)
+app.include_router(subscription_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -33,14 +38,14 @@ def home():
     <html>
     <body style="font-family:Arial;background:#0f172a;color:white;padding:50px;">
         <div style="max-width:900px;margin:auto;text-align:center;">
-            <img src="/static/logo.png" style="width:280px;margin-bottom:20px;background:white;padding:10px;border-radius:12px;">
             <h1>Boswell Consulting Group</h1>
             <p style="font-size:20px;color:#cbd5e1;">
-                Home Health Startup Risk Intelligence. Diagnose, de-risk, and build smarter healthcare operations.
+                Home Health Intelligence Platform — Startup + Operating Systems
             </p>
-            <a href="/audit/" style="background:#22c55e;color:#052e16;padding:14px 20px;text-decoration:none;border-radius:8px;">Startup Audit</a>
-            <a href="/operating-audit/" style="background:#2563eb;color:white;padding:14px 20px;text-decoration:none;border-radius:8px;margin-left:10px;">Operating Agency Audit</a>
-            <a href="/kits/" style="background:white;color:#0f172a;padding:14px 20px;text-decoration:none;border-radius:8px;margin-left:10px;">Kits</a>
+
+            <a href="/audit/" style="background:#22c55e;padding:14px 20px;border-radius:8px;color:black;">Startup Audit</a>
+            <a href="/operating-audit/" style="background:#2563eb;padding:14px 20px;border-radius:8px;color:white;margin-left:10px;">Operating Audit</a>
+            <a href="/dashboard/" style="background:white;padding:14px 20px;border-radius:8px;color:black;margin-left:10px;">Dashboard</a>
         </div>
     </body>
     </html>
