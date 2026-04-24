@@ -12,6 +12,7 @@ def audit_form():
     return """
     <html>
     <body style="font-family:Arial;background:#f8fafc;padding:40px;">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,6 +74,7 @@ def audit_form():
             margin-top: 30px;
         }
     </style>
+    
     
         <h1>Boswell Consulting Group Startup Intelligence Audit</h1>
         <p>Assess launch readiness across licensing, clinical staffing, revenue, operations, compliance, and execution capacity.</p>
