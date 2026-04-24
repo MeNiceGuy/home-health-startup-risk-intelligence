@@ -15,7 +15,7 @@ def create_checkout_session(product_name, amount, slug):
             "quantity": 1,
         }],
         mode="payment",
-        success_url=f"https://home-health-startup-risk-intelligence.onrender.com/deliver/{slug}?agency={client_data.get(\"agency_name\")}&owner={client_data.get(\"owner_name\")}&location={client_data.get(\"location\")}&start={client_data.get(\"start_date\")}",
+        success_url=f"https://home-health-startup-risk-intelligence.onrender.com/deliver/{slug}?session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url="https://home-health-startup-risk-intelligence.onrender.com/kits/",
     )
     return session.url

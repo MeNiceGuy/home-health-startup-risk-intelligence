@@ -1,40 +1,41 @@
-﻿from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from app.routes.auth import get_current_user
+﻿from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
+from app.services.tracking import get_purchases
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("/", response_class=HTMLResponse)
-def dashboard(request: Request):
-    user = get_current_user(request)
+def dashboard():
+    rows = get_purchases()
 
-    if not user:
-        return RedirectResponse("/auth/login", status_code=302)
-
-    email = user.get("email")
+    table = ""
+    for email, kit, session, file_path, date in rows:
+        table += f"""
+        <tr>
+            <td>{email}</td>
+            <td>{kit}</td>
+            <td>{date}</td>
+            <td><a href="/download-kit?file={file_path}">Download</a></td>
+        </tr>
+        """
 
     return f"""
     <html>
     <body style="font-family:Arial;background:#f8fafc;padding:40px;">
-        <div style="max-width:1000px;margin:auto;">
-            <h1>Boswell Consulting Group Dashboard</h1>
-            <p>Logged in as: <strong>{email}</strong></p>
+        <h1>Boswell Consulting Group Client Dashboard</h1>
 
-            <div style="background:white;padding:25px;border-radius:14px;margin-top:20px;">
-                <h2>Startup Risk Intelligence</h2>
-                <p>Run a new audit, review recommended kits, and download reports.</p>
-                <a href="/audit/">Run New Audit</a>
-            </div>
+        <table border="1" cellpadding="10" style="background:white;border-collapse:collapse;">
+            <tr>
+                <th>Email</th>
+                <th>Purchased Kit</th>
+                <th>Date</th>
+                <th>Download</th>
+            </tr>
+            {table}
+        </table>
 
-            <div style="background:white;padding:25px;border-radius:14px;margin-top:20px;">
-                <h2>Completion Kits</h2>
-                <p>Purchase targeted implementation kits based on your audit results.</p>
-                <a href="/kits/">View Kits</a>
-            </div>
-
-            <br>
-            <a href="/auth/logout">Logout</a>
-        </div>
+        <br>
+        <a href="/kits/">View Kits</a>
     </body>
     </html>
     """
