@@ -46,7 +46,7 @@ def generate_audit_pdf(result, fixes, agency_name, owner_name, location, start_d
     styles = getSampleStyleSheet()
     content = []
 
-    content.append(Paragraph("Home Health Startup Risk & Readiness Intelligence Report", styles["Title"]))
+    content.append(Paragraph("Boswell Consulting Group | Home Health Startup Risk & Readiness Intelligence Report", styles["Title"]))
     content.append(Spacer(1, 10))
 
     content.append(Paragraph(f"Agency: {agency_name}", styles["Normal"]))

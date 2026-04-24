@@ -12,7 +12,7 @@ def audit_form():
     return """
     <html>
     <body style="font-family:Arial;padding:40px;">
-        <h1>Home Health Startup Intelligence Audit</h1>
+        <h1>Boswell Consulting Group Startup Intelligence Audit</h1>
 
         <form method="post" action="/audit/run">
             <h2>Client Information</h2>

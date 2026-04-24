@@ -9,7 +9,7 @@ from app.routes.checkout import router as checkout_router
 from app.routes.delivery import router as delivery_router
 from app.routes.admin import router as admin_router
 
-app = FastAPI(title="Home Health Startup Risk Intelligence")
+app = FastAPI(title="Boswell Consulting Group")
 
 # correct static mount (no backticks)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -28,9 +28,9 @@ def home():
     <body style="font-family:Arial;background:#0f172a;color:white;padding:50px;">
         <div style="max-width:900px;margin:auto;text-align:center;">
             <img src="/static/logo.png" style="width:280px;margin-bottom:20px;background:white;padding:10px;border-radius:12px;">
-            <h1 style="font-size:44px;">Home Health Startup Risk Intelligence</h1>
+            <h1 style="font-size:44px;">Boswell Consulting Group</h1>
             <p style="font-size:20px;color:#cbd5e1;">
-                Diagnose and de-risk your agency before it costs you time, money, and compliance failures.
+                Home Health Startup Risk Intelligence by Boswell Consulting Group. Diagnose licensing, staffing, compliance, and operational risks before launch.
             </p>
 
             <br>
