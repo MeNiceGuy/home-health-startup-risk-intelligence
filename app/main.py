@@ -7,7 +7,7 @@ from app.routes.audit import router as audit_router
 from app.routes.kits import router as kits_router
 from app.routes.checkout import router as checkout_router
 from app.routes.delivery import router as delivery_router
-from app.routes.admin import router as admin_router
+from app.routes.admin import router as admin_router`nfrom app.routes.auth import router as auth_router`nfrom app.routes.dashboard import router as dashboard_router
 
 app = FastAPI(title="Boswell Consulting Group")
 
@@ -19,7 +19,7 @@ app.include_router(audit_router)
 app.include_router(kits_router)
 app.include_router(checkout_router)
 app.include_router(delivery_router)
-app.include_router(admin_router)
+app.include_router(admin_router)`napp.include_router(auth_router)`napp.include_router(dashboard_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():
