@@ -17,7 +17,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(launch_router)
 app.include_router(audit_router)
 app.include_router(kits_router)
-app.include_router(checkout_router)
+app.include_router(checkout_router)`nfrom app.routes.delivery import router as delivery_router`nfrom app.routes.download import router as download_router`napp.include_router(delivery_router)`napp.include_router(download_router)
 app.include_router(delivery_router)
 app.include_router(admin_router)`napp.include_router(auth_router)`napp.include_router(dashboard_router)`napp.include_router(operating_audit_router)`napp.include_router(operating_audit_router)
 

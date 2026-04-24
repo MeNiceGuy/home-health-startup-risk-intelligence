@@ -144,7 +144,7 @@ def run_audit(
     for item in result["missing_items"]:
         for key in KIT_MAP:
             if key in item:
-                kits_html += f'<li><a href="/kits/{KIT_MAP[key]}">Fix this: {item}</a></li>'
+                kits_html += f'<li><a href="/kits/{KIT_MAP[key]}">Fix this: <a href="/checkout/{item}</a>">Purchase Solution</a></li>'
 
     return f"""
     <html><body style="font-family:Arial;padding:40px;">
