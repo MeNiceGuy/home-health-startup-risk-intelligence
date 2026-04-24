@@ -1,0 +1,32 @@
+{
+  "state": "Virginia",
+  "business_type": "Home Health Agency",
+  "mvp_status": "starter guidance only",
+  "launch_steps": [
+    "Form business entity",
+    "Get EIN",
+    "Register with Virginia SCC",
+    "Prepare policies and procedures",
+    "Identify administrator and clinical leadership",
+    "Apply for applicable Virginia home care organization license",
+    "Prepare for inspection or survey",
+    "Set up HIPAA-compliant records process",
+    "Create staff onboarding and background check process"
+  ],
+  "compliance_categories": [
+    "Licensing",
+    "HIPAA privacy and security",
+    "Staff qualifications",
+    "Patient rights",
+    "Documentation",
+    "Quality assurance",
+    "Emergency preparedness"
+  ],
+  "risk_flags": [
+    "No written policies",
+    "No designated administrator",
+    "No compliance tracking system",
+    "No background check workflow",
+    "No documentation audit process"
+  ]
+}
