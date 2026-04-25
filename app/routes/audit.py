@@ -4,6 +4,7 @@ from app.services.risk_engine import calculate_risk_score
 from app.services.fix_engine import get_fix_instructions
 from app.services.pdf_engine import generate_audit_pdf
 from app.services.kit_mapper import KIT_MAP
+from app.services.state_regulatory_engine import generate_regulatory_intelligence
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
@@ -138,7 +139,11 @@ def run_audit(
     answers = locals()
     result = calculate_risk_score(answers)
     fixes = get_fix_instructions(result["missing_items"])
+    regulatory = generate_regulatory_intelligence(state, agency_type, revenue_model, answers)
     pdf_path = generate_audit_pdf(result, fixes, agency_name, owner_name, location, start_date)
+    regulatory_findings_html = "".join([f"<li>{x}</li>" for x in regulatory.get("findings", [])])
+    regulatory_blockers_html = "".join([f"<li>{x}</li>" for x in regulatory.get("blockers", [])])
+    regulatory_kits_html = "".join([f"<li>{x}</li>" for x in regulatory.get("recommended_kits", [])])
 
     kits_html = ""
     for item in result["missing_items"]:
@@ -153,6 +158,16 @@ def run_audit(
         <p>Score: {result["risk_score"]}/100 ({result["risk_tier"]})</p>
         <h2>Download Your Report</h2>
         <a href="/audit/download?file={pdf_path}">Download Report</a>
+        <h2>Regulatory Intelligence</h2>
+        <p><strong>Authority:</strong> {regulatory.get("authority")}</p>
+        <p><strong>Regulatory Risk:</strong> {regulatory.get("risk_level")}</p>
+        <h3>Regulatory Findings</h3>
+        <ul>{regulatory_findings_html}</ul>
+        <h3>Regulatory Blockers</h3>
+        <ul>{regulatory_blockers_html}</ul>
+        <h3>Recommended Regulatory Kits</h3>
+        <ul>{regulatory_kits_html}</ul>
+
         <h2>Recommended Solutions</h2>
         <ul>{kits_html}</ul>
         <br><a href="/audit/">Run Again</a>
