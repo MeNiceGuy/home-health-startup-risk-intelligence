@@ -6,6 +6,51 @@ import json
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+def get_recommendations(compliance, clinical, revenue, operations):
+    recs = []
+
+    if clinical < 60:
+        recs.append({
+            "name": "Clinical Oversight System",
+            "price": "$499",
+            "link": "/ops-checkout/clinical",
+            "desc": "Fix RN supervision, care delivery structure, and compliance risk."
+        })
+
+    if revenue < 60:
+        recs.append({
+            "name": "Revenue Intelligence System",
+            "price": "$399",
+            "link": "/ops-checkout/revenue",
+            "desc": "Fix payer strategy, billing flow, and cash cycle delays."
+        })
+
+    if compliance < 60:
+        recs.append({
+            "name": "Compliance Optimization System",
+            "price": "$299",
+            "link": "/ops-checkout/compliance",
+            "desc": "Fix policies, HIPAA exposure, and audit readiness."
+        })
+
+    if operations < 60:
+        recs.append({
+            "name": "Operations System Kit",
+            "price": "$349",
+            "link": "/ops-checkout/operations",
+            "desc": "Fix intake workflow, documentation system, and execution gaps."
+        })
+
+    if not recs:
+        recs.append({
+            "name": "Scale Optimization System",
+            "price": "$599",
+            "link": "/ops-checkout/scale",
+            "desc": "Optimize scaling, hiring, and performance systems."
+        })
+
+    return recs
+
 @router.get("/", response_class=HTMLResponse)
 def dashboard():
     subs, scores = get_dashboard_data()
@@ -18,18 +63,20 @@ def dashboard():
     revenue = latest[5] if latest else 0
     operations = latest[6] if latest else 0
 
-    if total >= 80:
-        badge = "Strong"
-        badge_color = "#16a34a"
-    elif total >= 60:
-        badge = "Watchlist"
-        badge_color = "#f59e0b"
-    else:
-        badge = "Critical"
-        badge_color = "#dc2626"
+    recs = get_recommendations(compliance, clinical, revenue, operations)
 
     labels = [str(row[7])[:10] for row in reversed(scores)]
     total_scores = [row[2] for row in reversed(scores)]
+
+    rec_html = "".join([
+        f"""
+        <div class="rec">
+            <h3>{r['name']} ({r['price']})</h3>
+            <p>{r['desc']}</p>
+            <a href="{r['link']}">Fix This</a>
+        </div>
+        """ for r in recs
+    ])
 
     return f"""
     <html>
@@ -37,77 +84,40 @@ def dashboard():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            body {{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}}
-            .sidebar {{position:fixed;left:0;top:0;width:230px;height:100vh;background:#0f172a;color:white;padding:24px;}}
-            .sidebar a {{display:block;color:#cbd5e1;text-decoration:none;margin:18px 0;}}
-            .main {{margin-left:280px;padding:32px;}}
-            .top {{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}}
-            .badge {{background:{badge_color};color:white;padding:10px 16px;border-radius:999px;font-weight:bold;}}
-            .grid {{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px;}}
-            .card {{background:white;padding:22px;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.08);}}
-            .metric {{font-size:34px;font-weight:bold;margin-top:10px;}}
-            .risk {{background:#fee2e2;color:#7f1d1d;border-left:6px solid #dc2626;}}
-            .cta a {{display:inline-block;margin:8px 8px 0 0;padding:13px 16px;border-radius:10px;text-decoration:none;font-weight:bold;}}
-            .red {{background:#dc2626;color:white;}}
-            .green {{background:#22c55e;color:#052e16;}}
-            .blue {{background:#2563eb;color:white;}}
-            canvas {{max-width:100%;}}
-            @media(max-width:900px) {{
-                .sidebar {{position:relative;width:auto;height:auto;}}
-                .main {{margin-left:0;padding:16px;}}
-                .grid {{grid-template-columns:1fr;}}
-                .top {{display:block;}}
-            }}
+            body {{margin:0;font-family:Arial;background:#f8fafc;padding:20px;}}
+            .card {{background:white;padding:20px;border-radius:14px;margin-bottom:20px;}}
+            .grid {{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}}
+            .rec {{background:#f1f5f9;padding:16px;border-radius:12px;margin-bottom:12px;}}
+            .rec a {{display:inline-block;margin-top:10px;background:#2563eb;color:white;padding:10px;border-radius:8px;text-decoration:none;}}
+            @media(max-width:800px){{.grid{{grid-template-columns:1fr;}}}}
         </style>
     </head>
+
     <body>
-        <div class="sidebar">
-            <h2>Boswell Consulting Group</h2>
-            <a href="/dashboard/">Dashboard</a>
-            <a href="/operating-audit/">Operating Audit</a>
-            <a href="/audit/">Startup Audit</a>
-            <a href="/kits/">Kits</a>
+
+        <h1>Intelligence Dashboard</h1>
+
+        <div class="grid">
+            <div class="card">Total: {total}</div>
+            <div class="card">Compliance: {compliance}</div>
+            <div class="card">Clinical: {clinical}</div>
+            <div class="card">Revenue: {revenue}</div>
+            <div class="card">Operations: {operations}</div>
         </div>
 
-        <div class="main">
-            <div class="top">
-                <div>
-                    <h1>Intelligence Dashboard</h1>
-                    <p>Operational risk, compliance health, and business intelligence tracking.</p>
-                </div>
-                <div class="badge">{badge}</div>
-            </div>
+        <div class="card">
+            <h2>AI Insight</h2>
+            <p style="white-space:pre-line;">{ai_insight}</p>
+        </div>
 
-            <div class="grid">
-                <div class="card"><h3>Total</h3><div class="metric">{total}/100</div></div>
-                <div class="card"><h3>Compliance</h3><div class="metric">{compliance}%</div></div>
-                <div class="card"><h3>Clinical</h3><div class="metric">{clinical}%</div></div>
-                <div class="card"><h3>Revenue</h3><div class="metric">{revenue}%</div></div>
-                <div class="card"><h3>Operations</h3><div class="metric">{operations}%</div></div>
-            </div>
+        <div class="card">
+            <h2>Recommended Fixes</h2>
+            {rec_html}
+        </div>
 
-            <div class="card risk">
-                <h2>Risk Indicator</h2>
-                <p><strong>Status:</strong> {badge}</p>
-                <p>If scores fall below 60, prioritize clinical oversight, documentation QA, revenue tracking, and compliance review immediately.</p>
-            </div>
-
-            <div class="card">
-                <h2>AI Executive Insight</h2>
-                <p style="white-space:pre-line;">{ai_insight}</p>
-            </div>
-
-            <div class="card">
-                <h2>Total Score Trend</h2>
-                <canvas id="chart"></canvas>
-            </div>
-
-            <div class="card cta">
-                <h2>Recommended Next Actions</h2>
-                <a class="red" href="/ops-checkout/full-ops">Fix Operational Gaps ($799)</a>
-                <a class="green" href="/subscribe/">Activate Monitoring ($99/mo)</a>
-                <a class="blue" href="/operating-audit/">Run New Audit</a>
-            </div>
+        <div class="card">
+            <h2>Trend</h2>
+            <canvas id="chart"></canvas>
         </div>
 
         <script>
@@ -116,17 +126,14 @@ def dashboard():
             data: {{
                 labels: {json.dumps(labels)},
                 datasets: [{{
-                    label: "Total Score",
+                    label: "Score",
                     data: {json.dumps(total_scores)},
-                    borderWidth: 3,
-                    tension: .35
+                    borderWidth: 2
                 }}]
-            }},
-            options: {{
-                scales: {{ y: {{ min:0, max:100 }} }}
             }}
         }});
         </script>
+
     </body>
     </html>
     """
