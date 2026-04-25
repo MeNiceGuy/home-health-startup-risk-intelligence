@@ -201,7 +201,16 @@ def run(
     .metric{{font-size:34px;font-weight:bold;}}
     .danger{{border-left:6px solid #dc2626;background:#fee2e2;color:#7f1d1d;}}
     .diag{{background:#f1f5f9;}}
-    canvas{{max-width:100%;min-height:300px;}}
+    .chart-container{
+    position:relative;
+    width:100%;
+    height:320px;
+    max-height:320px;
+}
+canvas{
+    width:100% !important;
+    height:100% !important;
+}
     @media(max-width:900px){{.metrics{{grid-template-columns:1fr;}}}}
     </style>
     </head>
@@ -233,13 +242,13 @@ def run(
       <div class="card">
         <h2>Score Breakdown</h2>
         <p>This chart shows which business function is weakest and should be addressed first.</p>
-        <canvas id="scoreChart"></canvas>
+        <div class="chart-container"><canvas id="scoreChart"></canvas></div>
       </div>
 
       <div class="card">
         <h2>Risk Radar</h2>
         <p>The radar chart shows whether risk is isolated or spread across the business.</p>
-        <canvas id="radarChart"></canvas>
+        <div class="chart-container"><canvas id="radarChart"></canvas></div>
       </div>
 
       <a href="/operating-audit/">Run Another Audit</a>
@@ -252,13 +261,13 @@ def run(
     new Chart(document.getElementById("scoreChart"), {{
       type:"bar",
       data:{{labels:labels,datasets:[{{label:"Operating Score",data:scores}}]}},
-      options:{{responsive:true,maintainAspectRatio:false,scales:{{y:{{min:0,max:100}}}}}}
+      options:{{responsive:true,maintainAspectRatio:true,scales:{{y:{{min:0,max:100}}}}}}
     }});
 
     new Chart(document.getElementById("radarChart"), {{
       type:"radar",
       data:{{labels:labels,datasets:[{{label:"Risk Profile",data:scores}}]}},
-      options:{{responsive:true,maintainAspectRatio:false,scales:{{r:{{min:0,max:100}}}}}}
+      options:{{responsive:true,maintainAspectRatio:true,scales:{{r:{{min:0,max:100}}}}}}
     }});
     </script>
     </body>
