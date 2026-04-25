@@ -255,7 +255,14 @@ canvas{
     </div>
 
     <script>
-    const labels = {json.dumps(labels)};
+    
+function getColor(value){
+    if(value >= 80) return "#16a34a";   // green
+    if(value >= 60) return "#f59e0b";   // yellow
+    return "#dc2626";                   // red
+}
+
+const labels = {json.dumps(labels)};
     const scores = {json.dumps(scores)};
 
     new Chart(document.getElementById("scoreChart"), {{
