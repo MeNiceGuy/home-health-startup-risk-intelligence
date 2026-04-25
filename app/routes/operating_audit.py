@@ -27,34 +27,24 @@ def risk_score(value, benchmark, higher_is_bad=True):
 @router.get("/", response_class=HTMLResponse)
 def form():
     return """
-    <html>
-    <body style="font-family:Arial;padding:40px;background:#f8fafc;">
+    <html><body style="font-family:Arial;padding:40px;">
     <h1>Operating Intelligence Audit</h1>
-    <p>Enter current performance numbers to compare against operating benchmarks.</p>
 
     <form method="post" action="/operating-audit/run">
-    <h2>Financial</h2>
-    Days in A/R: <input name="ar_days" value="45"><br><br>
-    Denial Rate (%): <input name="denial_rate" value="15"><br><br>
-    Clean Claim Rate (%): <input name="clean_rate" value="80"><br><br>
+    Days in A/R: <input name="ar_days" value="45"><br>
+    Denial Rate (%): <input name="denial_rate" value="15"><br>
+    Clean Claim Rate (%): <input name="clean_rate" value="80"><br>
+    Intake Time: <input name="intake_time" value="5"><br>
+    Documentation Lag: <input name="doc_lag" value="3"><br>
+    Missed Visits (%): <input name="missed_visits" value="8"><br>
+    Open Roles: <input name="open_roles" value="3"><br>
+    Turnover (%): <input name="turnover" value="40"><br>
+    QA Score (%): <input name="qa_score" value="75"><br>
+    HIPAA Score (%): <input name="hipaa_score" value="85"><br>
 
-    <h2>Operations</h2>
-    Intake Time (days): <input name="intake_time" value="5"><br><br>
-    Documentation Lag (days): <input name="doc_lag" value="3"><br><br>
-    Missed Visits (%): <input name="missed_visits" value="8"><br><br>
-
-    <h2>Staffing</h2>
-    Open Positions: <input name="open_roles" value="3"><br><br>
-    Turnover Rate (%): <input name="turnover" value="40"><br><br>
-
-    <h2>Compliance</h2>
-    QA Audit Score (%): <input name="qa_score" value="75"><br><br>
-    HIPAA Score (%): <input name="hipaa_score" value="85"><br><br>
-
-    <button type="submit">Run Predictive Intelligence</button>
+    <button type="submit">Run Audit</button>
     </form>
-    </body>
-    </html>
+    </body></html>
     """
 
 @router.post("/run", response_class=HTMLResponse)
@@ -70,31 +60,6 @@ def run(
     qa_score: float = Form(0),
     hipaa_score: float = Form(0)
 ):
-    benchmarks = {
-        "A/R Days": 30,
-        "Denial Rate": 10,
-        "Clean Claim Rate": 90,
-        "Intake Time": 2,
-        "Documentation Lag": 1,
-        "Missed Visits": 5,
-        "Open Roles": 1,
-        "Turnover": 30,
-        "QA Score": 90,
-        "HIPAA Score": 95
-    }
-
-    current = {
-        "A/R Days": ar_days,
-        "Denial Rate": denial_rate,
-        "Clean Claim Rate": clean_rate,
-        "Intake Time": intake_time,
-        "Documentation Lag": doc_lag,
-        "Missed Visits": missed_visits,
-        "Open Roles": open_roles,
-        "Turnover": turnover,
-        "QA Score": qa_score,
-        "HIPAA Score": hipaa_score
-    }
 
     financial = int((risk_score(ar_days,30) + risk_score(denial_rate,10) + risk_score(clean_rate,90,False)) / 3)
     operations = int((risk_score(intake_time,2) + risk_score(doc_lag,1) + risk_score(missed_visits,5)) / 3)
@@ -103,245 +68,43 @@ def run(
 
     total = int((financial + operations + staffing + compliance) / 4)
 
-# FINANCIAL IMPACT CALCULATIONS
-lost_revenue = int((denial_rate - 10) * 1000) if denial_rate > 10 else 0
-delay_cost = int((ar_days - 30) * 500) if ar_days > 30 else 0
-total_impact = lost_revenue + delay_cost
+    # FINANCIAL IMPACT
+    lost_revenue = int((denial_rate - 10) * 1000) if denial_rate > 10 else 0
+    delay_cost = int((ar_days - 30) * 500) if ar_days > 30 else 0
+    total_impact = lost_revenue + delay_cost
 
-# ROI PROJECTIONS
-revenue_fix_value = int(lost_revenue * 0.7)
-operations_fix_value = int(delay_cost * 0.5)
-compliance_fix_value = 2000 if compliance < 80 else 0
-staffing_fix_value = 1500 if staffing < 80 else 0
+    # PRIORITY ENGINE
+    actions = [
+        ("Financial", financial, lost_revenue),
+        ("Operations", operations, delay_cost),
+        ("Staffing", staffing, 1500),
+        ("Compliance", compliance, 2000)
+    ]
 
-# PRIORITIZATION ENGINE
-actions = []
+    actions = sorted(actions, key=lambda x: x[1])
 
-if financial < 80:
-    actions.append(("Revenue System", revenue_fix_value, "Stabilize cash flow and reduce denials"))
-
-if operations < 80:
-    actions.append(("Operations System", operations_fix_value, "Improve intake speed and execution"))
-
-if compliance < 80:
-    actions.append(("Compliance System", compliance_fix_value, "Reduce regulatory exposure"))
-
-if staffing < 80:
-    actions.append(("Staffing System", staffing_fix_value, "Improve coverage and reduce burnout"))
-
-# Sort by highest ROI impact
-actions = sorted(actions, key=lambda x: x[1], reverse=True)
-
-priority_html = ""
-for i, (name, value, desc) in enumerate(actions):
-    priority_html += f"""
-
-# 30-DAY EXECUTION ROADMAP
-roadmap_html = ""
-
-week_plan = [
-    ("Week 1", "Stabilize highest-risk system (Priority 1). Implement immediate fixes and stop major revenue/compliance leakage."),
-    ("Week 2", "Address second priority system. Improve workflows, reduce delays, and increase efficiency."),
-    ("Week 3", "Strengthen remaining weak areas. Focus on staffing, training, and consistency."),
-    ("Week 4", "Optimize and scale. Standardize processes, monitor KPIs, and prepare for growth.")
-]
-
-for week, desc in week_plan:
-    roadmap_html += f"""
-    <div class="card">
-        <h3>{week}</h3>
-        <p>{desc}</p>
-    </div>
-    """
-    <div class="card">
-        <h3>Priority {i+1}: {name}</h3>
-        <p><strong>Impact Value:</strong> ${value}</p>
-        <p>{desc}</p>
-    </div>
-    """
-
-# ROI PROJECTIONS
-revenue_fix_value = int(lost_revenue * 0.7)
-operations_fix_value = int(delay_cost * 0.5)
-compliance_fix_value = 2000 if compliance < 80 else 0
-staffing_fix_value = 1500 if staffing < 80 else 0
-
-# PRIORITIZATION ENGINE
-actions = []
-
-if financial < 80:
-    actions.append(("Revenue System", revenue_fix_value, "Stabilize cash flow and reduce denials"))
-
-if operations < 80:
-    actions.append(("Operations System", operations_fix_value, "Improve intake speed and execution"))
-
-if compliance < 80:
-    actions.append(("Compliance System", compliance_fix_value, "Reduce regulatory exposure"))
-
-if staffing < 80:
-    actions.append(("Staffing System", staffing_fix_value, "Improve coverage and reduce burnout"))
-
-# Sort by highest ROI impact
-actions = sorted(actions, key=lambda x: x[1], reverse=True)
-
-priority_html = ""
-for i, (name, value, desc) in enumerate(actions):
-    priority_html += f"""
-
-# 30-DAY EXECUTION ROADMAP
-roadmap_html = ""
-
-week_plan = [
-    ("Week 1", "Stabilize highest-risk system (Priority 1). Implement immediate fixes and stop major revenue/compliance leakage."),
-    ("Week 2", "Address second priority system. Improve workflows, reduce delays, and increase efficiency."),
-    ("Week 3", "Strengthen remaining weak areas. Focus on staffing, training, and consistency."),
-    ("Week 4", "Optimize and scale. Standardize processes, monitor KPIs, and prepare for growth.")
-]
-
-for week, desc in week_plan:
-    roadmap_html += f"""
-    <div class="card">
-        <h3>{week}</h3>
-        <p>{desc}</p>
-    </div>
-    """
-    <div class="card">
-        <h3>Priority {i+1}: {name}</h3>
-        <p><strong>Impact Value:</strong> ${value}</p>
-        <p>{desc}</p>
-    </div>
-    """
-
-    if total >= 80:
-        tier = "Low Risk"
-        message = "Agency appears stable, but should continue monitoring performance."
-    elif total >= 60:
-        tier = "Moderate Risk"
-        message = "Agency shows measurable bottlenecks that may limit profitability or scale."
-    else:
-        tier = "High Risk"
-        message = "Agency shows serious operational, financial, or compliance exposure requiring immediate correction."
-
-    labels = list(current.keys())
-    current_values = list(current.values())
-    benchmark_values = list(benchmarks.values())
-    score_labels = ["Financial", "Operations", "Staffing", "Compliance"]
-    score_values = [financial, operations, staffing, compliance]
+    # ROADMAP
+    roadmap_html = ""
+    for i, (name, score, impact) in enumerate(actions):
+        roadmap_html += f"""
+        <div>
+        <h3>Week {i+1}: {name}</h3>
+        <p>Focus on improving {name}. Estimated impact: ${impact}</p>
+        </div>
+        """
 
     return f"""
-    <html>
-    <head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-    body{{font-family:Arial;background:#f8fafc;margin:0;padding:24px;color:#0f172a;}}
-    .grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}}
-    .card{{background:white;padding:22px;border-radius:16px;margin-bottom:20px;box-shadow:0 8px 24px rgba(15,23,42,.08);}}
-    .metric{{font-size:34px;font-weight:bold;}}
-    .danger{{background:#fee2e2;color:#7f1d1d;border-left:6px solid #dc2626;}}
-    @media(max-width:900px){{.grid{{grid-template-columns:1fr;}}}}
-    </style>
-    </head>
-    <body>
+    <html><body style="font-family:Arial;padding:40px;">
+    <h1>Operating Intelligence Report</h1>
 
-    <h1>Predictive Operating Intelligence Report</h1>
+    <h2>Total Score: {total}</h2>
 
-    <div class="grid">
-        <div class="card"><h3>Total Risk Score</h3><div class="metric">{total}/100</div></div>
-        <div class="card"><h3>Financial</h3><div class="metric">{financial}%</div></div>
-        <div class="card"><h3>Operations</h3><div class="metric">{operations}%</div></div>
-        <div class="card"><h3>Compliance</h3><div class="metric">{compliance}%</div></div>
-    </div>
+    <h2>Financial Impact</h2>
+    <p>Revenue Loss: ${lost_revenue}</p>
+    <p>Cash Delay: ${delay_cost}</p>
 
-    <div class="card danger">
-        <h2>Predictive Risk Tier: {tier}</h2>
+    <h2>30-Day Roadmap</h2>
+    {roadmap_html}
 
-<div class="card danger">
-<h2>Estimated Financial Impact</h2>
-<p><strong>Revenue Loss from Denials:</strong> ${lost_revenue}</p>
-<p><strong>Cash Flow Delay Impact:</strong> ${delay_cost}</p>
-<p><strong>Total Estimated Impact:</strong> ${total_impact}</p>
-<p style="color:#7f1d1d;">
-These inefficiencies are directly reducing available cash flow, slowing growth,
-and increasing operational risk.
-</p>
-</div>
-        <p>{message}</p>
-    </div>
-
-    <div class="card">
-        <h2>Current Performance vs Benchmark</h2>
-<p style="color:#475569;">
-This chart compares your current performance against industry targets.
-Gaps indicate operational inefficiencies, revenue leakage, or compliance exposure.
-For example, higher A/R days directly delay cash flow, while high denial rates reduce revenue collected.
-</p>
-<p style="color:#475569;">
-This chart compares your current performance against industry targets.
-Gaps indicate operational inefficiencies, revenue leakage, or compliance exposure.
-For example, higher A/R days directly delay cash flow, while high denial rates reduce revenue collected.
-</p>
-        <canvas id="benchmarkChart"></canvas>
-    </div>
-
-    <div class="card">
-        <h2>Score Breakdown</h2>
-        <canvas id="scoreChart"></canvas>
-    </div>
-
-    <div class="card">
-        <h2>Risk Radar</h2>
-        <canvas id="radarChart"></canvas>
-    </div>
-
-    <div class="card">
-        <h2>Recommended Fixes</h2>
-        <ul>
-            <li>Financial below 80: Revenue Intelligence System</li>
-            <li>Operations below 80: Operations System Kit</li>
-            <li>Staffing below 80: Staffing Capacity System</li>
-            <li>Compliance below 80: Compliance Optimization System</li>
-        </ul>
-        <a href="/dashboard/">View Dashboard</a>
-    </div>
-
-    <script>
-    const labels = {json.dumps(labels)};
-    const currentValues = {json.dumps(current_values)};
-    const benchmarkValues = {json.dumps(benchmark_values)};
-    const scoreLabels = {json.dumps(score_labels)};
-    const scoreValues = {json.dumps(score_values)};
-
-    new Chart(document.getElementById("benchmarkChart"), {{
-        type: "bar",
-        data: {{
-            labels: labels,
-            datasets: [
-                {{label: "Client Current Performance", data: currentValues}},
-                {{label: "Benchmark Target", data: benchmarkValues}}
-            ]
-        }}
-    }});
-
-    new Chart(document.getElementById("scoreChart"), {{
-        type: "bar",
-        data: {{
-            labels: scoreLabels,
-            datasets: [{{label: "Score", data: scoreValues}}]
-        }},
-        options: {{scales: {{y: {{min:0,max:100}}}}}}
-    }});
-
-    new Chart(document.getElementById("radarChart"), {{
-        type: "radar",
-        data: {{
-            labels: scoreLabels,
-            datasets: [{{label: "Operating Health", data: scoreValues}}]
-        }},
-        options: {{scales: {{r: {{min:0,max:100}}}}}}
-    }});
-    </script>
-
-    </body>
-    </html>
+    </body></html>
     """
