@@ -39,6 +39,21 @@ def dashboard():
 
         <div style="background:white;padding:25px;border-radius:14px;margin-bottom:25px;">
             <h2>AI Trend Analysis</h2>
+
+<h2>Recommended System Upgrade</h2>
+
+<a href="/ops-checkout/full-ops"
+style="background:#ef4444;color:white;padding:14px 20px;border-radius:8px;display:inline-block;margin-top:10px;">
+Fix Your Operational Gaps ($799)
+</a>
+
+<br><br>
+
+<a href="/subscribe/"
+style="background:#22c55e;color:black;padding:14px 20px;border-radius:8px;display:inline-block;">
+Activate Monthly Intelligence Monitoring ($99/mo)
+</a>
+
             <p style="white-space:pre-line;">{ai_insight}</p>
         </div>
 
