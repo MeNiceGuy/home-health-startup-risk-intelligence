@@ -12,6 +12,14 @@ body{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}
 .metric{font-size:32px;font-weight:bold;}
 .danger{border-left:6px solid #dc2626;background:#fee2e2;color:#7f1d1d;}
 .chart-box{height:300px;}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0;}
+.legend span{padding:8px 12px;border-radius:999px;font-weight:bold;font-size:14px;}
+.green{background:#dcfce7;color:#166534;}
+.yellow{background:#fef3c7;color:#92400e;}
+.red{background:#fee2e2;color:#991b1b;}
+.bridge{background:#eff6ff;border-left:5px solid #2563eb;padding:18px;border-radius:12px;margin-top:18px;}
+.offer{margin-top:12px;padding:14px;background:#eff6ff;border-radius:12px}
+.offer a{display:inline-block;background:#2563eb;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:bold}
 @media(max-width:900px){.metrics{grid-template-columns:1fr}.chart-box{height:260px}}
 </style>
 </head>
@@ -34,24 +42,47 @@ body{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}
 
 <div class="card danger">
 <h2>Financial Impact</h2>
-<p>Revenue Loss: ${{ lost_revenue }}</p>
-<p>Cash Delay: ${{ delay_cost }}</p>
-<p>Total Impact: ${{ total_impact }}</p>
+<p><strong>Revenue Loss:</strong> ${{ lost_revenue }}</p>
+<p><strong>Cash Delay:</strong> ${{ delay_cost }}</p>
+<p><strong>Total Impact:</strong> ${{ total_impact }}</p>
 </div>
 
 <div class="card">
+{% if bundle %}
+<div style="border:3px solid #16a34a;padding:20px;border-radius:16px;margin-bottom:20px;background:#f0fdf4;">
+<h2>🚀 Recommended Full Solution</h2>
+<p><strong>{{ bundle.name }}</strong></p>
+<p>{{ bundle.desc }}</p>
+<p><strong>Investment:</strong> {{ bundle.price }}</p>
+<a href="{{ bundle.link }}" style="background:#16a34a;color:white;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:bold;">Fix Everything Now</a>
+</div>
+{% endif %}
 <h2>Root Cause Analysis</h2>
 {{ root_html | safe }}
 </div>
 
 <div class="card">
+<h2>Chart Key</h2>
+<div class="legend">
+<span class="green">Green: 80–100 = Strong</span>
+<span class="yellow">Yellow: 60–79 = Watchlist</span>
+<span class="red">Red: 0–59 = Critical</span>
+</div>
+<p><strong>How to read this:</strong> Red areas should be fixed first because they are most likely creating operational breakdowns, revenue leakage, compliance exposure, or scaling limits.</p>
+</div>
+
+<div class="card">
 <h2>Score Breakdown</h2>
+<p>This bar chart shows which business functions are strongest and weakest. The lowest score is the first system to fix.</p>
 <div class="chart-box"><canvas id="scoreChart"></canvas></div>
+<div class="bridge" id="scoreExplanation"></div>
 </div>
 
 <div class="card">
 <h2>Risk Radar</h2>
+<p>This radar chart shows whether risk is balanced or concentrated. A healthy agency should have a wide, balanced shape across all four areas.</p>
 <div class="chart-box"><canvas id="radarChart"></canvas></div>
+<div class="bridge" id="radarExplanation"></div>
 </div>
 
 </div>
@@ -66,17 +97,49 @@ function getColor(value){
   return "#dc2626";
 }
 
+function getStatus(value){
+  if(value >= 80) return "Strong";
+  if(value >= 60) return "Watchlist";
+  return "Critical";
+}
+
+const weakestIndex = scores.indexOf(Math.min(...scores));
+const weakestArea = labels[weakestIndex];
+const weakestScore = scores[weakestIndex];
+
+document.getElementById("scoreExplanation").innerHTML =
+"<h3>What this means</h3>" +
+"<p><strong>" + weakestArea + "</strong> is the biggest bottleneck at <strong>" + weakestScore + "%</strong>. This should be addressed first because it is most likely slowing growth, creating risk, or causing financial leakage.</p>" +
+"<p><strong>Solution bridge:</strong> Review the recommended kit or bundle above to install the missing system tied to this weakness.</p>";
+
+document.getElementById("radarExplanation").innerHTML =
+"<h3>Risk pattern</h3>" +
+"<p>If the radar shape is uneven, the agency is not scaling evenly. A low area can eventually pull down stronger areas. For example, weak operations can create missed visits, delayed billing, poor documentation, and client dissatisfaction.</p>";
+
 new Chart(document.getElementById("scoreChart"), {
   type:"bar",
   data:{
     labels:labels,
     datasets:[{
-      label:"Score",
+      label:"Operating Score",
       data:scores,
       backgroundColor:scores.map(getColor)
     }]
   },
-  options:{responsive:true, maintainAspectRatio:false, scales:{y:{min:0,max:100}}}
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      tooltip:{
+        callbacks:{
+          label:function(ctx){
+            return ctx.label + ": " + ctx.raw + "% — " + getStatus(ctx.raw);
+          }
+        }
+      }
+    },
+    scales:{y:{min:0,max:100}}
+  }
 });
 
 new Chart(document.getElementById("radarChart"), {
@@ -84,29 +147,21 @@ new Chart(document.getElementById("radarChart"), {
   data:{
     labels:labels,
     datasets:[{
-      label:"Risk",
+      label:"Risk Profile",
       data:scores,
-      backgroundColor:"rgba(37,99,235,.2)",
+      backgroundColor:"rgba(37,99,235,.18)",
       borderColor:"#2563eb",
-      pointBackgroundColor:scores.map(getColor)
+      pointBackgroundColor:scores.map(getColor),
+      pointBorderColor:scores.map(getColor)
     }]
   },
-  options:{responsive:true, maintainAspectRatio:false, scales:{r:{min:0,max:100}}}
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    scales:{r:{min:0,max:100}}
+  }
 });
 </script>
 
 </body>
 </html>
-{% if bundle %}
-<div class="card" style="border:3px solid #16a34a;">
-    <h2>🚀 Recommended Full Solution</h2>
-    <p><strong>{{ bundle.name }}</strong></p>
-    <p>{{ bundle.desc }}</p>
-    <p><strong>Investment:</strong> {{ bundle.price }}</p>
-
-    <a href="{{ bundle.link }}"
-    style="background:#16a34a;color:white;padding:14px 20px;border-radius:10px;text-decoration:none;">
-    Fix Everything Now
-    </a>
-</div>
-{% endif %}
