@@ -15,14 +15,14 @@ input{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:10px;font-s
 .info{color:#2563eb;font-weight:bold;cursor:pointer;margin-left:6px;}
 .tooltip{display:none;position:absolute;background:#0f172a;color:white;padding:13px;border-radius:10px;font-size:13px;top:66px;z-index:99;width:300px;line-height:1.45;box-shadow:0 10px 25px rgba(0,0,0,.25);}
 .field:hover .tooltip{display:block;}
-button{background:#2563eb;color:white;padding:15px 24px;border:0;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
+button{background:{{ tenant.color }};color:white;padding:15px 24px;border:0;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
 .note{background:#eff6ff;color:#1e3a8a;padding:18px;border-radius:14px;margin-bottom:22px;}
 @media(max-width:800px){.grid{grid-template-columns:1fr}.tooltip{position:static;display:block;margin-top:8px;width:auto}.hero h1{font-size:30px}}
 </style>
 </head>
 <body>
 <div class="hero">
-<h1>Operating Intelligence Audit</h1>
+{% if tenant.logo %}<img src="{{ tenant.logo }}" style="max-height:80px;margin-bottom:15px;">{% endif %}<h1>{{ tenant.name }}</h1>
 <p>Diagnose revenue leakage, staffing capacity, compliance risk, administrative gaps, and scaling bottlenecks.</p>
 </div>
 

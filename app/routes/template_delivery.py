@@ -3,11 +3,21 @@ from fastapi.responses import HTMLResponse, FileResponse
 from app.services.template_ai import generate_tailored_template, TEMPLATE_PRODUCTS
 from app.services.template_pdf import generate_template_pdf
 import stripe
+from app.routes.stripe_webhook import is_paid_session
+from app.services.settings import FREE_MODE
 
 router = APIRouter(prefix="/templates", tags=["Templates"])
 
 @router.get("/{slug}", response_class=HTMLResponse)
 def generate_template(slug: str, session_id: str = Query(None)):
+    if not FREE_MODE and (not session_id or not is_paid_session(session_id, slug)):
+        return HTMLResponse("""
+        <html><body style="font-family:Arial;padding:40px;">
+        <h1>Payment Verification Required</h1>
+        <p>Your payment has not been confirmed yet. If you just paid, refresh in a few seconds.</p>
+        <a href="/template-checkout/""" + slug + """">Return to Checkout</a>
+        </body></html>
+        """, status_code=403)
     email = "unknown"
 
     if session_id:

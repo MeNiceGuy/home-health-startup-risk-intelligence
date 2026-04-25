@@ -1,6 +1,7 @@
 ﻿from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from app.services.templates import templates
+from app.services.tenants import get_tenant
 import json
 
 router = APIRouter(prefix="/operating-audit", tags=["Operating Intelligence"])
@@ -67,6 +68,8 @@ def diagnosis_html(issues):
 
 @router.get("/", response_class=HTMLResponse)
 def form(request: Request):
+    from app.services.tenants import get_tenant
+    tenant = get_tenant(request)
     form_sections = """
     <div class='card'><h2>Revenue Cycle</h2><div class='grid'>
       <div><label>Days in A/R</label><input name='ar_days' value='45'><div class='tooltip'>Average days to collect payment. Target: under 30.</div></div>
@@ -88,7 +91,8 @@ def form(request: Request):
       <div><label>HIPAA Score (%)</label><input name='hipaa_score' value='85'><div class='tooltip'>Privacy, security, access control, and records protection readiness. Target: 95%+.</div></div>
     </div></div>
     """
-    return templates.TemplateResponse("operating_intake.html", {"request": request, "form_sections": form_sections})
+    return templates.TemplateResponse("operating_intake.html", {"request": request, "form_sections": form_sections,
+        "tenant": tenant})
 
 @router.post("/run", response_class=HTMLResponse)
 def run(
@@ -155,7 +159,8 @@ def run(
         "root_html": diagnosis_html(issues),
         "bundle": bundle,
         "labels": json.dumps(["Financial","Operations","Staffing","Compliance"]),
-        "scores": json.dumps([financial, operations, staffing, compliance])
+        "scores": json.dumps([financial, operations, staffing, compliance]),
+        "tenant": get_tenant(request)
     }
 
     return templates.TemplateResponse("operating_report.html", context)

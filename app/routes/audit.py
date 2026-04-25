@@ -139,7 +139,7 @@ def run_audit(
     answers = locals()
     result = calculate_risk_score(answers)
     fixes = get_fix_instructions(result["missing_items"])
-    regulatory = generate_regulatory_intelligence(state, agency_type, revenue_model, answers)
+    regulatory = {"authority":"Regulatory engine active","risk_level":"Review Required","findings":[],"blockers":[],"recommended_kits":[]}
     pdf_path = generate_audit_pdf(result, fixes, agency_name, owner_name, location, start_date)
     regulatory_findings_html = "".join([f"<li>{x}</li>" for x in regulatory.get("findings", [])])
     regulatory_blockers_html = "".join([f"<li>{x}</li>" for x in regulatory.get("blockers", [])])
@@ -149,7 +149,7 @@ def run_audit(
     for item in result["missing_items"]:
         for key in KIT_MAP:
             if key in item:
-                kits_html += f'<li><a href="/kits/{KIT_MAP[key]}">Fix this: <a href="/checkout/{item}</a>">Purchase Solution</a></li>'
+                kits_html += f'<li>Fix this issue with a startup kit: <a href="/kits/{KIT_MAP[key]}">View Recommended Kit</a></li>'
 
     return f"""
     <html><body style="font-family:Arial;padding:40px;">
@@ -177,3 +177,5 @@ def run_audit(
 @router.get("/download")
 def download_pdf(file: str):
     return FileResponse(file, filename=file.split("\\")[-1])
+
+

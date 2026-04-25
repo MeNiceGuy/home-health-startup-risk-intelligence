@@ -1,4 +1,6 @@
 ﻿from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -17,6 +19,15 @@ from app.routes.subscription import router as subscription_router
 from app.routes.template_delivery import router as template_delivery_router
 from app.routes.template_checkout import router as template_checkout_router
 from app.routes.progress import router as progress_router
+from app.routes.stripe_webhook import router as stripe_webhook_router
+from app.routes.onboarding import router as onboarding_router
+from app.routes.consultant_subscription import router as consultant_subscription_router
+from app.routes.free_onboarding import router as free_onboarding_router
+from app.routes.client_dashboard import router as client_dashboard_router
+from app.routes.onboarding_success import router as onboarding_success_router
+from app.routes.consultant_dashboard import router as consultant_dashboard_router
+from app.routes.preview import router as preview_router
+from app.routes.preview import router as preview_router
 
 app = FastAPI(title="Boswell Consulting Group")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -36,6 +47,15 @@ app.include_router(subscription_router)
 app.include_router(template_delivery_router)
 app.include_router(template_checkout_router)
 app.include_router(progress_router)
+app.include_router(stripe_webhook_router)
+app.include_router(onboarding_router)
+app.include_router(consultant_subscription_router)
+app.include_router(free_onboarding_router)
+app.include_router(client_dashboard_router)
+app.include_router(onboarding_success_router)
+app.include_router(consultant_dashboard_router)
+app.include_router(preview_router)
+app.include_router(preview_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -88,8 +108,20 @@ def home():
             </ul>
             <a class="btn" href="/operating-audit/">Start Operating Audit</a>
           </div>
-        </div>
-      </div>
-    </body>
+          <div class="card" style="margin-top:22px;border:3px solid #16a34a;">
+    <span class="tag">For Consultants</span>
+    <h2>White-Label Consultant Platform</h2>
+    <p>Use this system under your consulting brand to run audits, sell templates, generate AI-tailored client documents, and track client execution progress.</p>
+    <ul>
+      <li>Launch your own branded audit platform</li>
+      <li>Sell startup and operating improvement kits</li>
+      <li>Use AI delivery after checkout</li>
+      <li>Keep clients engaged with progress tracking</li>
+    </ul>
+    <a class="btn green" href="/onboard/">Start White-Label Setup</a>
+  </div>
+</div>
+</body>
     </html>
     """
+

@@ -26,7 +26,7 @@ body{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}
 <body>
 
 <div class="hero">
-<h1>Operating Intelligence Report</h1>
+{% if tenant.logo %}<img src="{{ tenant.logo }}" style="max-height:80px;margin-bottom:15px;">{% endif %}<h1>{{ tenant.name }} Operating Intelligence Report</h1>
 <p>Total Score: {{ total }}/100</p>
 </div>
 
