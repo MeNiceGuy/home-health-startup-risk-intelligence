@@ -135,6 +135,24 @@ actions = sorted(actions, key=lambda x: x[1], reverse=True)
 priority_html = ""
 for i, (name, value, desc) in enumerate(actions):
     priority_html += f"""
+
+# 30-DAY EXECUTION ROADMAP
+roadmap_html = ""
+
+week_plan = [
+    ("Week 1", "Stabilize highest-risk system (Priority 1). Implement immediate fixes and stop major revenue/compliance leakage."),
+    ("Week 2", "Address second priority system. Improve workflows, reduce delays, and increase efficiency."),
+    ("Week 3", "Strengthen remaining weak areas. Focus on staffing, training, and consistency."),
+    ("Week 4", "Optimize and scale. Standardize processes, monitor KPIs, and prepare for growth.")
+]
+
+for week, desc in week_plan:
+    roadmap_html += f"""
+    <div class="card">
+        <h3>{week}</h3>
+        <p>{desc}</p>
+    </div>
+    """
     <div class="card">
         <h3>Priority {i+1}: {name}</h3>
         <p><strong>Impact Value:</strong> ${value}</p>
@@ -169,6 +187,24 @@ actions = sorted(actions, key=lambda x: x[1], reverse=True)
 priority_html = ""
 for i, (name, value, desc) in enumerate(actions):
     priority_html += f"""
+
+# 30-DAY EXECUTION ROADMAP
+roadmap_html = ""
+
+week_plan = [
+    ("Week 1", "Stabilize highest-risk system (Priority 1). Implement immediate fixes and stop major revenue/compliance leakage."),
+    ("Week 2", "Address second priority system. Improve workflows, reduce delays, and increase efficiency."),
+    ("Week 3", "Strengthen remaining weak areas. Focus on staffing, training, and consistency."),
+    ("Week 4", "Optimize and scale. Standardize processes, monitor KPIs, and prepare for growth.")
+]
+
+for week, desc in week_plan:
+    roadmap_html += f"""
+    <div class="card">
+        <h3>{week}</h3>
+        <p>{desc}</p>
+    </div>
+    """
     <div class="card">
         <h3>Priority {i+1}: {name}</h3>
         <p><strong>Impact Value:</strong> ${value}</p>
