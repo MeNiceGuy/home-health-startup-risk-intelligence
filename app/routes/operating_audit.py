@@ -108,6 +108,18 @@ lost_revenue = int((denial_rate - 10) * 1000) if denial_rate > 10 else 0
 delay_cost = int((ar_days - 30) * 500) if ar_days > 30 else 0
 total_impact = lost_revenue + delay_cost
 
+# ROI PROJECTIONS
+revenue_fix_value = int(lost_revenue * 0.7)
+operations_fix_value = int(delay_cost * 0.5)
+compliance_fix_value = 2000 if compliance < 80 else 0
+staffing_fix_value = 1500 if staffing < 80 else 0
+
+# ROI PROJECTIONS
+revenue_fix_value = int(lost_revenue * 0.7)
+operations_fix_value = int(delay_cost * 0.5)
+compliance_fix_value = 2000 if compliance < 80 else 0
+staffing_fix_value = 1500 if staffing < 80 else 0
+
     if total >= 80:
         tier = "Low Risk"
         message = "Agency appears stable, but should continue monitoring performance."
