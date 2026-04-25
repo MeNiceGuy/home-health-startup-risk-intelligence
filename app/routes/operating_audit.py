@@ -22,39 +22,28 @@ def kit_for(area):
         "Revenue Cycle": ("Revenue Cycle Starter Kit", "$199", "/templates/revenue"),
         "Operations": ("Operations Workflow Kit", "$199", "/templates/operations"),
         "Staffing": ("Hiring & Retention Kit", "$179", "/templates/hiring"),
-        "Compliance": ("Compliance Policy Pack", "$199", "/templates/compliance"),
-        "Documentation": ("Documentation QA Kit", "$149", "/templates/incidents"),
-        "Administration": ("Admin Control System", "$179", "/templates/staff")
+        "Compliance": ("Compliance Policy Pack", "$199", "/templates/compliance")
     }
     return kits.get(area, ("Business Optimization Kit", "$199", "/templates/operations"))
 
 def diagnose(data):
     issues = []
-
     if data["denial_rate"] > 10:
-        issues.append(("Revenue Cycle","High Claim Denial Risk","Claims are likely being submitted without strong pre-billing review, documentation validation, or denial tracking. This can reduce collected revenue and create rework."))
-
+        issues.append(("Revenue Cycle","High Claim Denial Risk","Claims may be submitted without strong pre-billing review, documentation validation, or denial tracking."))
     if data["ar_days"] > 30:
-        issues.append(("Revenue Cycle","Slow Cash Collection","Payment collection is slower than the target. This can pressure payroll, delay reinvestment, and weaken growth capacity."))
-
+        issues.append(("Revenue Cycle","Slow Cash Collection","Payment collection is slower than target and may weaken payroll, reinvestment, and growth capacity."))
     if data["intake_time"] > 2:
-        issues.append(("Operations","Slow Intake Conversion","The agency may lack a clear intake checklist, referral workflow, or owner assignment. Slow intake can lose referrals to faster competitors."))
-
+        issues.append(("Operations","Slow Intake Conversion","The agency may lack a clear intake checklist, referral workflow, or owner assignment."))
     if data["missed_visits"] > 5:
-        issues.append(("Operations","Missed Visit Exposure","Missed visits usually indicate scheduling weakness, staffing shortages, poor backup coverage, or weak daily monitoring."))
-
+        issues.append(("Operations","Missed Visit Exposure","Missed visits often indicate scheduling weakness, staffing shortages, or poor backup coverage."))
     if data["turnover"] > 30:
-        issues.append(("Staffing","Retention Breakdown","High turnover suggests onboarding, pay structure, scheduling, culture, or workload problems. This weakens continuity and scale."))
-
+        issues.append(("Staffing","Retention Breakdown","High turnover suggests onboarding, pay, scheduling, culture, or workload problems."))
     if data["open_roles"] > 1:
-        issues.append(("Staffing","Capacity Constraint","Open roles limit census growth and increase strain on current staff. Growth becomes risky without recruiting capacity."))
-
+        issues.append(("Staffing","Capacity Constraint","Open roles limit census growth and increase strain on current staff."))
     if data["qa_score"] < 90:
-        issues.append(("Compliance","QA Audit Weakness","Low QA scores suggest documentation defects, inconsistent internal review, or weak policy enforcement."))
-
+        issues.append(("Compliance","QA Audit Weakness","Low QA scores suggest documentation defects or weak internal review."))
     if data["hipaa_score"] < 95:
-        issues.append(("Compliance","HIPAA Exposure","Privacy and security controls may be incomplete. This creates legal, operational, and reputational risk."))
-
+        issues.append(("Compliance","HIPAA Exposure","Privacy and security controls may be incomplete."))
     return issues
 
 def diagnosis_html(issues):
@@ -113,7 +102,17 @@ def run(
     qa_score: float = Form(0),
     hipaa_score: float = Form(0)
 ):
-    data = locals()
+    data = {
+        "ar_days": ar_days,
+        "denial_rate": denial_rate,
+        "intake_time": intake_time,
+        "missed_visits": missed_visits,
+        "open_roles": open_roles,
+        "turnover": turnover,
+        "qa_score": qa_score,
+        "hipaa_score": hipaa_score
+    }
+
     issues = diagnose(data)
 
     financial = int((risk_score(ar_days, 30) + risk_score(denial_rate, 10)) / 2)

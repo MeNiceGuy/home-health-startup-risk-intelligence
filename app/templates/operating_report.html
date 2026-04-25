@@ -165,3 +165,20 @@ new Chart(document.getElementById("radarChart"), {
 
 </body>
 </html>
+
+
+<div class="card">
+<h2>📅 30-Day Execution Plan</h2>
+<p>This plan is automatically generated based on your weakest area: <strong>{{ weakest }}</strong></p>
+
+{% for week, task in roadmap %}
+<div style="margin-bottom:12px;padding:14px;background:#f1f5f9;border-radius:12px;">
+<strong>{{ week }}</strong><br>
+{{ task }}
+</div>
+{% endfor %}
+
+<div style="margin-top:16px;padding:16px;background:#dcfce7;border-radius:12px;">
+<strong>Execution Strategy:</strong> Follow this roadmap sequentially. Each step builds operational stability and directly improves your lowest-performing category.
+</div>
+</div>

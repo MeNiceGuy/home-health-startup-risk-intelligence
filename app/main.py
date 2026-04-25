@@ -15,6 +15,7 @@ from app.routes.operating_audit import router as operating_audit_router
 from app.routes.ops_checkout import router as ops_checkout_router
 from app.routes.subscription import router as subscription_router
 from app.routes.template_delivery import router as template_delivery_router
+from app.routes.progress import router as progress_router
 
 app = FastAPI(title="Boswell Consulting Group")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -32,6 +33,7 @@ app.include_router(operating_audit_router)
 app.include_router(ops_checkout_router)
 app.include_router(subscription_router)
 app.include_router(template_delivery_router)
+app.include_router(progress_router)
 
 @app.get("/", response_class=HTMLResponse)
 def home():

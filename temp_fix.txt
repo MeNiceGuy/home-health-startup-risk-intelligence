@@ -1,0 +1,17 @@
+    context = {
+        "request": request,
+        "total": total,
+        "financial": financial,
+        "operations": operations,
+        "staffing": staffing,
+        "compliance": compliance,
+        "lost_revenue": lost_revenue,
+        "delay_cost": delay_cost,
+        "total_impact": total_impact,
+        "root_html": diagnosis_html(issues),
+        "bundle": bundle,
+        "labels": json.dumps(["Financial","Operations","Staffing","Compliance"]),
+        "scores": json.dumps([financial, operations, staffing, compliance])
+    }
+
+    return templates.TemplateResponse("operating_report.html", context)

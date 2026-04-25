@@ -1,0 +1,31 @@
+def generate_roadmap(category):
+    if category == "Operations":
+        return [
+            ("Week 1","Audit intake and scheduling workflow. Identify delays, missed visits, and lack of ownership."),
+            ("Week 2","Implement structured intake checklist and scheduling system with daily tracking."),
+            ("Week 3","Introduce backup staffing coverage and real-time monitoring dashboard."),
+            ("Week 4","Optimize workflow and reduce missed visits below 5%.")
+        ]
+
+    if category == "Revenue Cycle":
+        return [
+            ("Week 1","Analyze denial patterns and billing delays."),
+            ("Week 2","Implement pre-billing QA checklist and validation process."),
+            ("Week 3","Create denial tracking system and follow-up workflow."),
+            ("Week 4","Reduce denial rate below 10% and improve cash flow timing.")
+        ]
+
+    if category == "Staffing":
+        return [
+            ("Week 1","Audit turnover causes and open roles."),
+            ("Week 2","Implement structured hiring and onboarding pipeline."),
+            ("Week 3","Introduce retention strategies and workload balancing."),
+            ("Week 4","Stabilize staffing capacity and reduce turnover.")
+        ]
+
+    return [
+        ("Week 1","Review compliance gaps and audit results."),
+        ("Week 2","Update policies and documentation standards."),
+        ("Week 3","Implement internal QA audit process."),
+        ("Week 4","Achieve compliance readiness above 90%.")
+    ]
