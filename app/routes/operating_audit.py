@@ -103,6 +103,11 @@ def run(
 
     total = int((financial + operations + staffing + compliance) / 4)
 
+# FINANCIAL IMPACT CALCULATIONS
+lost_revenue = int((denial_rate - 10) * 1000) if denial_rate > 10 else 0
+delay_cost = int((ar_days - 30) * 500) if ar_days > 30 else 0
+total_impact = lost_revenue + delay_cost
+
     if total >= 80:
         tier = "Low Risk"
         message = "Agency appears stable, but should continue monitoring performance."
@@ -146,11 +151,32 @@ def run(
 
     <div class="card danger">
         <h2>Predictive Risk Tier: {tier}</h2>
+
+<div class="card danger">
+<h2>Estimated Financial Impact</h2>
+<p><strong>Revenue Loss from Denials:</strong> ${lost_revenue}</p>
+<p><strong>Cash Flow Delay Impact:</strong> ${delay_cost}</p>
+<p><strong>Total Estimated Impact:</strong> ${total_impact}</p>
+<p style="color:#7f1d1d;">
+These inefficiencies are directly reducing available cash flow, slowing growth,
+and increasing operational risk.
+</p>
+</div>
         <p>{message}</p>
     </div>
 
     <div class="card">
         <h2>Current Performance vs Benchmark</h2>
+<p style="color:#475569;">
+This chart compares your current performance against industry targets.
+Gaps indicate operational inefficiencies, revenue leakage, or compliance exposure.
+For example, higher A/R days directly delay cash flow, while high denial rates reduce revenue collected.
+</p>
+<p style="color:#475569;">
+This chart compares your current performance against industry targets.
+Gaps indicate operational inefficiencies, revenue leakage, or compliance exposure.
+For example, higher A/R days directly delay cash flow, while high denial rates reduce revenue collected.
+</p>
         <canvas id="benchmarkChart"></canvas>
     </div>
 
