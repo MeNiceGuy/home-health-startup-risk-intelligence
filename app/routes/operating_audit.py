@@ -264,12 +264,32 @@ function getColor(value){
 
 const labels = {json.dumps(labels)};
     const scores = {json.dumps(scores)};
+    const targetScore = 80;
+    const gaps = scores.map(s => Math.max(targetScore - s, 0));
 
     new Chart(document.getElementById("scoreChart"), {{
       type:"bar",
       data:{{labels:labels,datasets:[{{label:"Operating Score",data:scores}}]}},
       options:{{responsive:true,maintainAspectRatio:true,scales:{{y:{{min:0,max:100}}}}}}
     }});
+
+    new Chart(document.getElementById("gapChart"), {
+      type:"bar",
+      data:{
+        labels:labels,
+        datasets:[{
+          label:"Gap From Target",
+          data:gaps,
+          backgroundColor:gaps.map(g => g >= 25 ? "#dc2626" : g >= 10 ? "#f59e0b" : "#16a34a"),
+          borderWidth:2
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        scales:{y:{min:0,max:80}}
+      }
+    });
 
     new Chart(document.getElementById("radarChart"), {{
       type:"radar",
