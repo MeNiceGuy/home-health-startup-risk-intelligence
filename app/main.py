@@ -45,7 +45,7 @@ def home():
 
             <a href="/audit/" style="background:#22c55e;padding:14px 20px;border-radius:8px;color:black;">Startup Audit</a>
             <a href="/operating-audit/" style="background:#2563eb;padding:14px 20px;border-radius:8px;color:white;margin-left:10px;">Operating Audit</a>
-            <a href="/dashboard/" style="background:white;padding:14px 20px;border-radius:8px;color:black;margin-left:10px;">Dashboard</a>
+            
         </div>
     </body>
     </html>

@@ -1,50 +1,38 @@
 ﻿from fastapi import APIRouter, Form
 from fastapi.responses import HTMLResponse
-from app.services.saas_tracking import save_intelligence_score
 
 router = APIRouter(prefix="/operating-audit", tags=["Operating Intelligence"])
-
-def score(vals):
-    return sum([20 for v in vals if v == "yes"])
 
 @router.get("/", response_class=HTMLResponse)
 def form():
     return """
     <html>
     <body style="font-family:Arial;padding:40px;">
-    <h1>Operating Intelligence System</h1>
+
+    <h1>Operating Intelligence Audit</h1>
 
     <form method="post" action="/operating-audit/run">
 
-    <h2>Compliance</h2>
-    Policies Updated? <select name="policies"><option>no</option><option>yes</option></select><br>
-    HIPAA System Active? <select name="hipaa"><option>no</option><option>yes</option></select><br>
-    QA Audits Monthly? <select name="qa"><option>no</option><option>yes</option></select><br>
-
-    <h2>Clinical</h2>
-    RN Oversight Active? <select name="rn"><option>no</option><option>yes</option></select><br>
-    Background Checks Current? <select name="bg"><option>no</option><option>yes</option></select><br>
-
-    <h2>Financial Intelligence</h2>
-    Claims Submitted Weekly? <select name="claims"><option>no</option><option>yes</option></select><br>
-    Denials Tracked? <select name="denials"><option>no</option><option>yes</option></select><br>
-    Reimbursement Timeline Known? <select name="reimbursement"><option>no</option><option>yes</option></select><br>
-
-    <h2>Revenue & Growth</h2>
-    Payer Strategy Defined? <select name="payer"><option>no</option><option>yes</option></select><br>
-    Referral System Active? <select name="referral"><option>no</option><option>yes</option></select><br>
-    Marketing Strategy Active? <select name="marketing"><option>no</option><option>yes</option></select><br>
-
-    <h2>Staffing Capacity</h2>
-    Staffing Plan Defined? <select name="staffing"><option>no</option><option>yes</option></select><br>
-    Hiring Pipeline Active? <select name="hiring"><option>no</option><option>yes</option></select><br>
-    Visits Fully Covered? <select name="coverage"><option>no</option><option>yes</option></select><br>
+    <h2>Financial Performance</h2>
+    Days in A/R: <input name="ar_days"><br>
+    Claim Denial Rate (%): <input name="denial_rate"><br>
+    Clean Claim Rate (%): <input name="clean_rate"><br>
 
     <h2>Operations</h2>
-    Intake System Defined? <select name="intake"><option>no</option><option>yes</option></select><br>
-    Documentation System Active? <select name="docs"><option>no</option><option>yes</option></select><br>
+    Intake Time (days): <input name="intake_time"><br>
+    Documentation Lag (days): <input name="doc_lag"><br>
+    Missed Visits (%): <input name="missed_visits"><br>
+
+    <h2>Staffing</h2>
+    Open Positions: <input name="open_roles"><br>
+    Turnover Rate (%): <input name="turnover"><br>
+
+    <h2>Compliance</h2>
+    QA Audit Score (%): <input name="qa_score"><br>
+    HIPAA Compliance Score (%): <input name="hipaa_score"><br>
 
     <br><button type="submit">Run Intelligence Audit</button>
+
     </form>
     </body>
     </html>
@@ -52,57 +40,59 @@ def form():
 
 @router.post("/run", response_class=HTMLResponse)
 def run(
-    policies:str=Form("no"), hipaa:str=Form("no"), qa:str=Form("no"),
-    rn:str=Form("no"), bg:str=Form("no"),
-    claims:str=Form("no"), denials:str=Form("no"), reimbursement:str=Form("no"),
-    payer:str=Form("no"), referral:str=Form("no"), marketing:str=Form("no"),
-    staffing:str=Form("no"), hiring:str=Form("no"), coverage:str=Form("no"),
-    intake:str=Form("no"), docs:str=Form("no")
+    ar_days:int=Form(0),
+    denial_rate:int=Form(0),
+    clean_rate:int=Form(0),
+    intake_time:int=Form(0),
+    doc_lag:int=Form(0),
+    missed_visits:int=Form(0),
+    open_roles:int=Form(0),
+    turnover:int=Form(0),
+    qa_score:int=Form(0),
+    hipaa_score:int=Form(0)
 ):
-    compliance = score([policies, hipaa, qa])
-    clinical = score([rn, bg])
-    financial = score([claims, denials, reimbursement])
-    revenue = score([payer, referral, marketing])
-    staffing_score = score([staffing, hiring, coverage])
-    operations = score([intake, docs])
 
-    total = int((compliance+clinical+financial+revenue+staffing_score+operations)/6)
-
-    save_intelligence_score(
-        "Operating Agency","Full Audit",
-        total,compliance,clinical,revenue,operations
-    )
+    # INDUSTRY BENCHMARKS
+    benchmarks = {
+        "ar_days": 30,
+        "denial_rate": 10,
+        "clean_rate": 90,
+        "intake_time": 2,
+        "doc_lag": 1,
+        "missed_visits": 5,
+        "turnover": 30,
+        "qa_score": 90,
+        "hipaa_score": 95
+    }
 
     return f"""
     <html>
     <body style="font-family:Arial;padding:40px;">
+    
     <h1>Operating Intelligence Report</h1>
 
-    <h2>Total Score: {total}/100</h2>
+    <h2>Benchmark Comparison</h2>
 
     <ul>
-    <li>Compliance: {compliance}%</li>
-    <li>Clinical: {clinical}%</li>
-    <li>Financial: {financial}%</li>
-    <li>Revenue: {revenue}%</li>
-    <li>Staffing: {staffing_score}%</li>
-    <li>Operations: {operations}%</li>
+    <li>A/R Days: {ar_days} (Industry: {benchmarks['ar_days']})</li>
+    <li>Denial Rate: {denial_rate}% (Industry: {benchmarks['denial_rate']}%)</li>
+    <li>Clean Claim Rate: {clean_rate}% (Industry: {benchmarks['clean_rate']}%)</li>
+    <li>Intake Time: {intake_time} days (Industry: {benchmarks['intake_time']})</li>
+    <li>Documentation Lag: {doc_lag} days (Industry: {benchmarks['doc_lag']})</li>
+    <li>Missed Visits: {missed_visits}% (Industry: {benchmarks['missed_visits']}%)</li>
+    <li>Turnover: {turnover}% (Industry: {benchmarks['turnover']}%)</li>
+    <li>QA Score: {qa_score}% (Industry: {benchmarks['qa_score']}%)</li>
+    <li>HIPAA Score: {hipaa_score}% (Industry: {benchmarks['hipaa_score']}%)</li>
     </ul>
 
-    <h2>Business Impact</h2>
+    <h2>What This Means</h2>
     <p>
-    Weak financial or staffing systems create the highest failure risk,
-    even if compliance is strong.
+    Any metric outside industry benchmark indicates operational inefficiency,
+    compliance risk, or revenue leakage.
     </p>
 
-    <h2>Next Moves</h2>
-    <ul>
-    <li>Fix financial tracking immediately</li>
-    <li>Strengthen staffing pipeline</li>
-    <li>Implement QA + documentation audits</li>
-    </ul>
+    <a href="/dashboard/">View Intelligence Dashboard</a>
 
-    <br><a href="/dashboard/">View Dashboard</a>
     </body>
     </html>
     """
