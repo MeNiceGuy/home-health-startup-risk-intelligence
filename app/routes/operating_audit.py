@@ -19,12 +19,12 @@ def risk_score(value, benchmark, higher_is_bad=True):
 
 def kit_for(area):
     kits = {
-        "Revenue Cycle": ("Revenue Cycle Starter Kit", "$199", "/templates/revenue"),
-        "Operations": ("Operations Workflow Kit", "$199", "/templates/operations"),
-        "Staffing": ("Hiring & Retention Kit", "$179", "/templates/hiring"),
-        "Compliance": ("Compliance Policy Pack", "$199", "/templates/compliance")
+        "Revenue Cycle": ("Revenue Cycle Starter Kit", "$199", "/template-checkout/revenue"),
+        "Operations": ("Operations Workflow Kit", "$199", "/template-checkout/operations"),
+        "Staffing": ("Hiring & Retention Kit", "$179", "/template-checkout/hiring"),
+        "Compliance": ("Compliance Policy Pack", "$199", "/template-checkout/compliance")
     }
-    return kits.get(area, ("Business Optimization Kit", "$199", "/templates/operations"))
+    return kits.get(area, ("Business Optimization Kit", "$199", "/template-checkout/operations"))
 
 def diagnose(data):
     issues = []
