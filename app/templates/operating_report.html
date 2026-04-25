@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;padding:50px 24px;}
+.wrap{max-width:1150px;margin:-30px auto 40px;padding:20px;}
+.card,.diag{background:white;padding:24px;border-radius:18px;margin-bottom:20px;box-shadow:0 12px 32px rgba(15,23,42,.12);}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.metric{font-size:32px;font-weight:bold;}
+.danger{border-left:6px solid #dc2626;background:#fee2e2;color:#7f1d1d;}
+.chart-box{height:300px;}
+@media(max-width:900px){.metrics{grid-template-columns:1fr}.chart-box{height:260px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<h1>Operating Intelligence Report</h1>
+<p>Total Score: {{ total }}/100</p>
+</div>
+
+<div class="wrap">
+
+<div class="metrics">
+<div class="card"><h3>Total</h3><div class="metric">{{ total }}</div></div>
+<div class="card"><h3>Financial</h3><div class="metric">{{ financial }}%</div></div>
+<div class="card"><h3>Operations</h3><div class="metric">{{ operations }}%</div></div>
+<div class="card"><h3>Staffing</h3><div class="metric">{{ staffing }}%</div></div>
+<div class="card"><h3>Compliance</h3><div class="metric">{{ compliance }}%</div></div>
+</div>
+
+<div class="card danger">
+<h2>Financial Impact</h2>
+<p>Revenue Loss: ${{ lost_revenue }}</p>
+<p>Cash Delay: ${{ delay_cost }}</p>
+<p>Total Impact: ${{ total_impact }}</p>
+</div>
+
+<div class="card">
+<h2>Root Cause Analysis</h2>
+{{ root_html | safe }}
+</div>
+
+<div class="card">
+<h2>Score Breakdown</h2>
+<div class="chart-box"><canvas id="scoreChart"></canvas></div>
+</div>
+
+<div class="card">
+<h2>Risk Radar</h2>
+<div class="chart-box"><canvas id="radarChart"></canvas></div>
+</div>
+
+</div>
+
+<script>
+const labels = {{ labels | safe }};
+const scores = {{ scores | safe }};
+
+function getColor(value){
+  if(value >= 80) return "#16a34a";
+  if(value >= 60) return "#f59e0b";
+  return "#dc2626";
+}
+
+new Chart(document.getElementById("scoreChart"), {
+  type:"bar",
+  data:{
+    labels:labels,
+    datasets:[{
+      label:"Score",
+      data:scores,
+      backgroundColor:scores.map(getColor)
+    }]
+  },
+  options:{responsive:true, maintainAspectRatio:false, scales:{y:{min:0,max:100}}}
+});
+
+new Chart(document.getElementById("radarChart"), {
+  type:"radar",
+  data:{
+    labels:labels,
+    datasets:[{
+      label:"Risk",
+      data:scores,
+      backgroundColor:"rgba(37,99,235,.2)",
+      borderColor:"#2563eb",
+      pointBackgroundColor:scores.map(getColor)
+    }]
+  },
+  options:{responsive:true, maintainAspectRatio:false, scales:{r:{min:0,max:100}}}
+});
+</script>
+
+</body>
+</html>
+{% if bundle %}
+<div class="card" style="border:3px solid #16a34a;">
+    <h2>🚀 Recommended Full Solution</h2>
+    <p><strong>{{ bundle.name }}</strong></p>
+    <p>{{ bundle.desc }}</p>
+    <p><strong>Investment:</strong> {{ bundle.price }}</p>
+
+    <a href="{{ bundle.link }}"
+    style="background:#16a34a;color:white;padding:14px 20px;border-radius:10px;text-decoration:none;">
+    Fix Everything Now
+    </a>
+</div>
+{% endif %}

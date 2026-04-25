@@ -1,0 +1,25 @@
+def template_recommendations(issue):
+    issue = issue.lower()
+
+    if "denial" in issue or "billing" in issue:
+        return [
+            {"name":"Billing & Denial Workflow Template","price":"$149","link":"/templates/billing"},
+            {"name":"Revenue Cycle Policy Pack","price":"$199","link":"/templates/revenue"}
+        ]
+
+    if "scheduling" in issue or "intake" in issue:
+        return [
+            {"name":"Intake & Scheduling SOP","price":"$129","link":"/templates/intake"},
+            {"name":"Operations Workflow System","price":"$179","link":"/templates/operations"}
+        ]
+
+    if "staff" in issue:
+        return [
+            {"name":"Hiring & Onboarding Kit","price":"$149","link":"/templates/hiring"},
+            {"name":"Staff Retention System","price":"$129","link":"/templates/staff"}
+        ]
+
+    return [
+        {"name":"Compliance Policy Pack","price":"$199","link":"/templates/compliance"},
+        {"name":"Incident Reporting System","price":"$129","link":"/templates/incidents"}
+    ]

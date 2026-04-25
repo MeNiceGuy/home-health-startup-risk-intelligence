@@ -1,0 +1,6 @@
+for t in templates:
+    html += f"""
+    <a href="{t['link']}" style="display:inline-block;margin-top:6px;background:#0ea5e9;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">
+    {t['name']} ({t['price']})
+    </a>
+    """

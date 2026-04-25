@@ -1,0 +1,46 @@
+def diagnosis_html(diagnoses):
+    html = ""
+
+    for area, issue, cause in diagnoses:
+
+        if "denial" in issue.lower():
+            solution = "Revenue Intelligence Optimization Kit"
+            price = "$799"
+        elif "scheduling" in issue.lower() or "intake" in issue.lower():
+            solution = "Operations Efficiency System"
+            price = "$699"
+        elif "staff" in issue.lower():
+            solution = "Staffing & Retention System"
+            price = "$599"
+        else:
+            solution = "Compliance Protection System"
+            price = "$499"
+
+        html += f"""
+        <div class="diag">
+            <h3>{area}: {issue}</h3>
+
+            <p><strong>Root Cause:</strong> {cause}</p>
+
+            <p><strong>System Failure:</strong>
+            This issue exists because there is no structured system governing this process.</p>
+
+            <p><strong>Business Impact:</strong>
+            This leads to revenue loss, operational inefficiency, and limits scalability.</p>
+
+            <p><strong>Execution Gap:</strong>
+            The business is reacting instead of proactively controlling this area.</p>
+
+            <div style="margin-top:10px;padding:12px;background:#eff6ff;border-radius:10px;">
+                <strong>Recommended Solution:</strong> {solution}<br>
+                <strong>Investment:</strong> {price}<br><br>
+
+                <a href="/ops-checkout/{solution.replace(' ','-').lower()}"
+                style="background:#2563eb;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">
+                Fix This Now
+                </a>
+            </div>
+        </div>
+        """
+
+    return html

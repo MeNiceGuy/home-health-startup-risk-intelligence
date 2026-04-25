@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;padding:60px 24px;text-align:center;}
+.hero p{color:#dbeafe;font-size:18px;}
+.wrap{max-width:1100px;margin:-35px auto 40px;padding:20px;}
+.card{background:white;padding:28px;border-radius:18px;box-shadow:0 14px 35px rgba(15,23,42,.14);margin-bottom:22px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.field{position:relative;}
+label{font-weight:bold;display:block;margin-bottom:8px;}
+input{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;box-sizing:border-box;}
+.info{color:#2563eb;font-weight:bold;cursor:pointer;margin-left:6px;}
+.tooltip{display:none;position:absolute;background:#0f172a;color:white;padding:13px;border-radius:10px;font-size:13px;top:66px;z-index:99;width:300px;line-height:1.45;box-shadow:0 10px 25px rgba(0,0,0,.25);}
+.field:hover .tooltip{display:block;}
+button{background:#2563eb;color:white;padding:15px 24px;border:0;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
+.note{background:#eff6ff;color:#1e3a8a;padding:18px;border-radius:14px;margin-bottom:22px;}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.tooltip{position:static;display:block;margin-top:8px;width:auto}.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="hero">
+<h1>Operating Intelligence Audit</h1>
+<p>Diagnose revenue leakage, staffing capacity, compliance risk, administrative gaps, and scaling bottlenecks.</p>
+</div>
+
+<div class="wrap">
+<div class="note">
+<strong>How to use this:</strong> Enter your best current numbers. Hover over the ⓘ icons for examples and guidance.
+</div>
+
+<form method="post" action="/operating-audit/run">
+{{ form_sections | safe }}
+<button type="submit">Run Root-Cause Intelligence Audit</button>
+</form>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+def generate_bundle(diagnoses):
+    categories = set([d[0] for d in diagnoses])
+
+    if len(categories) >= 3:
+        return {
+            "name": "Full Operational Transformation System",
+            "price": "$2,999",
+            "desc": "Fix revenue, operations, staffing, and compliance systems in one integrated solution.",
+            "link": "/bundle/full-system"
+        }
+
+    elif len(categories) == 2:
+        return {
+            "name": "Targeted Optimization Bundle",
+            "price": "$1,499",
+            "desc": "Focused system to fix your two weakest operational areas.",
+            "link": "/bundle/targeted"
+        }
+
+    return None

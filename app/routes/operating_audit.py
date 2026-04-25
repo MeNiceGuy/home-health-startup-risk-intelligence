@@ -1,8 +1,7 @@
-﻿from fastapi import APIRouter, Form, Request, Request
+﻿from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
+from app.services.templates import templates
 import json
-from app.services.templates import templates
-from app.services.templates import templates
 
 router = APIRouter(prefix="/operating-audit", tags=["Operating Intelligence"])
 
@@ -11,15 +10,27 @@ def risk_score(value, benchmark, higher_is_bad=True):
         value = float(value or 0)
         benchmark = float(benchmark or 1)
         ratio = value / benchmark if higher_is_bad else benchmark / value if value else 2
-        if ratio <= 1: return 90
-        if ratio <= 1.25: return 75
-        if ratio <= 1.5: return 60
+        if ratio <= 1:
+            return 90
+        if ratio <= 1.25:
+            return 75
+        if ratio <= 1.5:
+            return 60
         return 35
-    except:
+    except Exception:
         return 40
 
 def yes_no_bad(value):
     return str(value or "").strip().lower() in ["no", "none", "manual", "unknown", "not sure", ""]
+
+def field(label, name, value, tip):
+    return f"""
+    <div class="field">
+      <label>{label} <span class="info">ⓘ</span></label>
+      <input name="{name}" value="{value}">
+      <div class="tooltip">{tip}</div>
+    </div>
+    """
 
 def root_cause_diagnosis(data):
     diagnoses = []
@@ -28,34 +39,34 @@ def root_cause_diagnosis(data):
         diagnoses.append(("Revenue Cycle", "High denial rate", "Likely caused by weak billing review, incomplete documentation, payer rule errors, or no denial tracking process."))
 
     if yes_no_bad(data["billing_process"]):
-        diagnoses.append(("Revenue Cycle", "No defined billing workflow", "Billing is likely dependent on memory or individual effort instead of a repeatable process."))
+        diagnoses.append(("Revenue Cycle", "No defined billing workflow", "Billing is likely dependent on memory instead of a repeatable process."))
 
-    if data["billing_owner"].lower() in ["owner", "none", "unknown"]:
-        diagnoses.append(("Administration", "Billing ownership risk", "The owner or unclear ownership may create bottlenecks, delayed follow-up, and weak accountability."))
+    if str(data["billing_owner"]).lower() in ["owner", "none", "unknown"]:
+        diagnoses.append(("Administration", "Billing ownership risk", "Owner-handled or unclear billing ownership may create bottlenecks and delayed follow-up."))
 
     if float(data["intake_time"]) > 2:
-        diagnoses.append(("Operations", "Slow intake process", "Client onboarding is likely delayed by unclear referral handling, missing intake checklist, or manual coordination."))
+        diagnoses.append(("Operations", "Slow intake process", "Likely caused by unclear referral handling, missing intake checklist, or manual coordination."))
 
-    if data["schedule_system"].lower() in ["none", "manual", "paper"]:
-        diagnoses.append(("Operations", "Scheduling system weakness", "Manual scheduling increases missed visits, communication gaps, and scaling limitations."))
+    if str(data["schedule_system"]).lower() in ["none", "manual", "paper"]:
+        diagnoses.append(("Operations", "Scheduling system weakness", "Manual scheduling increases missed visits, communication gaps, and scaling limits."))
 
     if float(data["missed_visits"]) > 5:
-        diagnoses.append(("Operations", "Missed visit risk", "Likely caused by staffing shortages, weak backup coverage, poor scheduling controls, or lack of real-time monitoring."))
+        diagnoses.append(("Operations", "Missed visit risk", "Likely caused by staffing shortages, weak backup coverage, or poor scheduling controls."))
 
     if yes_no_bad(data["doc_same_day"]):
         diagnoses.append(("Documentation", "Documentation lag risk", "Delayed documentation can slow billing, weaken compliance, and reduce audit readiness."))
 
     if float(data["open_roles"]) > 1:
-        diagnoses.append(("Staffing", "Capacity gap", "Open roles may limit growth, increase missed visits, and place pressure on current staff."))
+        diagnoses.append(("Staffing", "Capacity gap", "Open roles may limit growth and increase missed visits."))
 
     if float(data["turnover"]) > 30:
-        diagnoses.append(("Staffing", "High turnover risk", "Turnover may indicate weak onboarding, poor retention systems, compensation pressure, or scheduling strain."))
+        diagnoses.append(("Staffing", "High turnover risk", "Turnover may indicate weak onboarding, poor retention, compensation pressure, or scheduling strain."))
 
     if yes_no_bad(data["hiring_process"]):
         diagnoses.append(("Staffing", "No repeatable hiring pipeline", "Growth will be limited because recruiting, screening, onboarding, and training are not systemized."))
 
     if yes_no_bad(data["backup_staff"]):
-        diagnoses.append(("Staffing", "No backup coverage", "Call-outs can immediately become missed visits, client dissatisfaction, and compliance exposure."))
+        diagnoses.append(("Staffing", "No backup coverage", "Call-outs can become missed visits, client dissatisfaction, and compliance exposure."))
 
     if float(data["qa_score"]) < 90:
         diagnoses.append(("Compliance", "QA audit weakness", "The agency may have documentation defects, policy gaps, or inconsistent internal review processes."))
@@ -77,22 +88,9 @@ def diagnosis_html(diagnoses):
 
     html = ""
     for area, issue, cause in diagnoses:
-        html += f"""
-        <div class="diag">
-            <h3>{area}: {issue}</h3>
-            <p>{cause}</p>
-        </div>
-        """
+        templates = template_recommendations(issue)
+        html += f"<div class='diag'><h3>{area}: {issue}</h3><p>{cause}</p></div>"
     return html
-
-def field(label, name, value, tip):
-    return f"""
-    <div class="field">
-      <label>{label} <span class="info">ⓘ</span></label>
-      <input name="{name}" value="{value}">
-      <div class="tooltip">{tip}</div>
-    </div>
-    """
 
 @router.get("/", response_class=HTMLResponse)
 def form(request: Request):
@@ -100,12 +98,13 @@ def form(request: Request):
     <div class="card"><h2>Revenue Cycle Intelligence</h2><div class="grid">
     {field("Days in A/R", "ar_days", "45", "Average days to collect payment after billing. Target: under 30 days.")}
     {field("Denial Rate (%)", "denial_rate", "15", "Percent of claims denied. Target: 10% or lower.")}
+    {field("Clean Claim Rate (%)", "clean_rate", "80", "Percent of claims accepted without correction. Target: 90% or higher.")}
     {field("Billing Process Defined?", "billing_process", "No", "Example: coding, claim submission, denial follow-up, and payment posting.")}
     {field("Who Handles Billing?", "billing_owner", "Owner", "Example: owner, biller, outsourced billing company, or office manager.")}
     </div></div>
 
     <div class="card"><h2>Operations Intelligence</h2><div class="grid">
-    {field("Intake Time (days)", "intake_time", "5", "Time from referral/client inquiry to completed intake. Target: 1–2 days.")}
+    {field("Intake Time (days)", "intake_time", "5", "Time from referral/client inquiry to completed intake. Target: 1-2 days.")}
     {field("Scheduling System Used?", "schedule_system", "Manual", "Example: EMR scheduling, spreadsheet, paper calendar, or no system.")}
     {field("Missed Visits (%)", "missed_visits", "8", "Percent of scheduled visits missed or not completed. Target: 5% or lower.")}
     {field("Documentation Completed Same Day?", "doc_same_day", "No", "Same-day notes reduce billing delays and audit exposure.")}
@@ -133,146 +132,76 @@ def form(request: Request):
 
 @router.post("/run", response_class=HTMLResponse)
 def run(
-    ar_days: float = Form(0), denial_rate: float = Form(0), clean_rate: float = Form(80),
-    billing_process: str = Form("No"), billing_owner: str = Form("Owner"),
-    intake_time: float = Form(0), schedule_system: str = Form("Manual"),
-    missed_visits: float = Form(0), doc_same_day: str = Form("No"),
-    open_roles: float = Form(0), turnover: float = Form(0),
-    hiring_process: str = Form("No"), backup_staff: str = Form("No"),
-    qa_score: float = Form(0), policies_updated: str = Form("No"),
-    incident_tracking: str = Form("No"), hipaa_score: float = Form(0)
+    request: Request,
+    ar_days: float = Form(0),
+    denial_rate: float = Form(0),
+    clean_rate: float = Form(80),
+    billing_process: str = Form("No"),
+    billing_owner: str = Form("Owner"),
+    intake_time: float = Form(0),
+    schedule_system: str = Form("Manual"),
+    missed_visits: float = Form(0),
+    doc_same_day: str = Form("No"),
+    open_roles: float = Form(0),
+    turnover: float = Form(0),
+    hiring_process: str = Form("No"),
+    backup_staff: str = Form("No"),
+    qa_score: float = Form(0),
+    policies_updated: str = Form("No"),
+    incident_tracking: str = Form("No"),
+    hipaa_score: float = Form(0)
 ):
-    data = locals()
+    data = {
+        "ar_days": ar_days,
+        "denial_rate": denial_rate,
+        "clean_rate": clean_rate,
+        "billing_process": billing_process,
+        "billing_owner": billing_owner,
+        "intake_time": intake_time,
+        "schedule_system": schedule_system,
+        "missed_visits": missed_visits,
+        "doc_same_day": doc_same_day,
+        "open_roles": open_roles,
+        "turnover": turnover,
+        "hiring_process": hiring_process,
+        "backup_staff": backup_staff,
+        "qa_score": qa_score,
+        "policies_updated": policies_updated,
+        "incident_tracking": incident_tracking,
+        "hipaa_score": hipaa_score
+    }
+
     diagnoses = root_cause_diagnosis(data)
 
-    financial = int((risk_score(ar_days,30) + risk_score(denial_rate,10) + risk_score(clean_rate,90,False)) / 3)
-    operations = int((risk_score(intake_time,2) + risk_score(missed_visits,5)) / 2)
-    staffing = int((risk_score(open_roles,1) + risk_score(turnover,30)) / 2)
-    compliance = int((risk_score(qa_score,90,False) + risk_score(hipaa_score,95,False)) / 2)
+    financial = int((risk_score(ar_days, 30) + risk_score(denial_rate, 10) + risk_score(clean_rate, 90, False)) / 3)
+    operations = int((risk_score(intake_time, 2) + risk_score(missed_visits, 5)) / 2)
+    staffing = int((risk_score(open_roles, 1) + risk_score(turnover, 30)) / 2)
+    compliance = int((risk_score(qa_score, 90, False) + risk_score(hipaa_score, 95, False)) / 2)
     total = int((financial + operations + staffing + compliance) / 4)
 
     lost_revenue = int((denial_rate - 10) * 1000) if denial_rate > 10 else 0
     delay_cost = int((ar_days - 30) * 500) if ar_days > 30 else 0
     total_impact = lost_revenue + delay_cost
 
-    labels = ["Financial","Operations","Staffing","Compliance"]
+    labels = ["Financial", "Operations", "Staffing", "Compliance"]
     scores = [financial, operations, staffing, compliance]
 
-    root_html = diagnosis_html(diagnoses)
+    bundle = generate_bundle(diagnoses)
 
-    return f"""
-    <html>
-    <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-    body{{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}}
-    .hero{{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;padding:50px 24px;}}
-    .wrap{{max-width:1150px;margin:-30px auto 40px;padding:20px;}}
-    .card,.diag{{background:white;padding:24px;border-radius:18px;margin-bottom:20px;box-shadow:0 12px 32px rgba(15,23,42,.12);}}
-    .metrics{{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}}
-    .metric{{font-size:34px;font-weight:bold;}}
-    .danger{{border-left:6px solid #dc2626;background:#fee2e2;color:#7f1d1d;}}
-    .diag{{background:#f1f5f9;}}
-    .chart-container{
-    position:relative;
-    width:100%;
-    height:320px;
-    max-height:320px;
-}
-canvas{
-    width:100% !important;
-    height:100% !important;
-}
-    @media(max-width:900px){{.metrics{{grid-template-columns:1fr;}}}}
-    </style>
-    </head>
-    <body>
-    <div class="hero"><h1>Root-Cause Operating Intelligence Report</h1><p>Total Score: {total}/100</p></div>
+context = {
+        "request": request,
+        "total": total,
+        "financial": financial,
+        "operations": operations,
+        "staffing": staffing,
+        "compliance": compliance,
+        "lost_revenue": lost_revenue,
+        "delay_cost": delay_cost,
+        "total_impact": total_impact,
+        "root_html": diagnosis_html(diagnoses),
+        "labels": json.dumps(labels),
+        "scores": json.dumps(scores),
+        "bundle": bundle
+    }
 
-    <div class="wrap">
-      <div class="metrics">
-        <div class="card"><h3>Total</h3><div class="metric">{total}</div></div>
-        <div class="card"><h3>Financial</h3><div class="metric">{financial}%</div></div>
-        <div class="card"><h3>Operations</h3><div class="metric">{operations}%</div></div>
-        <div class="card"><h3>Staffing</h3><div class="metric">{staffing}%</div></div>
-        <div class="card"><h3>Compliance</h3><div class="metric">{compliance}%</div></div>
-      </div>
-
-      <div class="card danger">
-        <h2>Estimated Financial Impact</h2>
-        <p><strong>Revenue Loss from Denials:</strong> ${lost_revenue}</p>
-        <p><strong>Cash Flow Delay Impact:</strong> ${delay_cost}</p>
-        <p><strong>Total Estimated Impact:</strong> ${total_impact}</p>
-      </div>
-
-      <div class="card">
-        <h2>Root-Cause Diagnoses</h2>
-        <p>These findings explain why the bottlenecks are likely happening, not just what the score says.</p>
-        {root_html}
-      </div>
-
-      <div class="card">
-        <h2>Score Breakdown</h2>
-        <p>This chart shows which business function is weakest and should be addressed first.</p>
-        <div class="chart-container"><canvas id="scoreChart"></canvas></div>
-      </div>
-
-      <div class="card">
-        <h2>Risk Radar</h2>
-        <p>The radar chart shows whether risk is isolated or spread across the business.</p>
-        <div class="chart-container"><canvas id="radarChart"></canvas></div>
-      </div>
-
-      <a href="/operating-audit/">Run Another Audit</a>
-    </div>
-
-    <script>
-    
-function getColor(value){{
-    if(value >= 80) return "#16a34a";   // green
-    if(value >= 60) return "#f59e0b";   // yellow
-    return "#dc2626";                   // red
-}
-
-const labels = {json.dumps(labels)};
-    const scores = {json.dumps(scores)};
-    const targetScore = 80;
-    const gaps = scores.map(s => Math.max(targetScore - s, 0));
-
-    new Chart(document.getElementById("scoreChart"), {{
-      type:"bar",
-      data:{{{labels:labels,datasets:[{{label:"Operating Score",data:scores}}}]}},
-      options:{{responsive:true,maintainAspectRatio:true,scales:{{y:{{min:0,max:100}}}}}}
-    }});
-
-    new Chart(document.getElementById("gapChart"), {
-      type:"bar",
-      data:{{
-        labels:labels,
-        datasets:[{
-          label:"Gap From Target",
-          data:gaps,
-          backgroundColor:gaps.map(g => g >= 25 ? "#dc2626" : g >= 10 ? "#f59e0b" : "#16a34a"),
-          borderWidth:2
-        }}]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        scales:{y:{min:0,max:80}}
-      }
-    });
-
-    new Chart(document.getElementById("radarChart"), {{
-      type:"radar",
-      data:{{{labels:labels,datasets:[{{label:"Risk Profile",data:scores}}}]}},
-      options:{{responsive:true,maintainAspectRatio:true,scales:{{r:{{min:0,max:100}}}}}}
-    }});
-    </script>
-    </body>
-    </html>
-    """
-
-
-
+    return templates.TemplateResponse("operating_report.html", context)
