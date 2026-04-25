@@ -256,7 +256,7 @@ canvas{
 
     <script>
     
-function getColor(value){
+function getColor(value){{
     if(value >= 80) return "#16a34a";   // green
     if(value >= 60) return "#f59e0b";   // yellow
     return "#dc2626";                   // red
@@ -269,20 +269,20 @@ const labels = {json.dumps(labels)};
 
     new Chart(document.getElementById("scoreChart"), {{
       type:"bar",
-      data:{{labels:labels,datasets:[{{label:"Operating Score",data:scores}}]}},
+      data:{{{labels:labels,datasets:[{{label:"Operating Score",data:scores}}}]}},
       options:{{responsive:true,maintainAspectRatio:true,scales:{{y:{{min:0,max:100}}}}}}
     }});
 
     new Chart(document.getElementById("gapChart"), {
       type:"bar",
-      data:{
+      data:{{
         labels:labels,
         datasets:[{
           label:"Gap From Target",
           data:gaps,
           backgroundColor:gaps.map(g => g >= 25 ? "#dc2626" : g >= 10 ? "#f59e0b" : "#16a34a"),
           borderWidth:2
-        }]
+        }}]
       },
       options:{
         responsive:true,
@@ -293,7 +293,7 @@ const labels = {json.dumps(labels)};
 
     new Chart(document.getElementById("radarChart"), {{
       type:"radar",
-      data:{{labels:labels,datasets:[{{label:"Risk Profile",data:scores}}]}},
+      data:{{{labels:labels,datasets:[{{label:"Risk Profile",data:scores}}}]}},
       options:{{responsive:true,maintainAspectRatio:true,scales:{{r:{{min:0,max:100}}}}}}
     }});
     </script>
