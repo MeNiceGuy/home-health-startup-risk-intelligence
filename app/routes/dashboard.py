@@ -7,7 +7,12 @@ import json
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("/", response_class=HTMLResponse)
-def dashboard():
+from app.routes.auth import get_current_user
+
+def dashboard(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse("/auth/login")
     subs, scores = get_dashboard_data()
 
     ai_insight = generate_trend_insights(scores)
@@ -40,6 +45,11 @@ def dashboard():
         <div style="background:white;padding:25px;border-radius:14px;margin-bottom:25px;">
             <h2>AI Trend Analysis</h2>
 
+<div style="background:#fee2e2;color:#7f1d1d;padding:20px;border-radius:12px;margin-bottom:20px;">
+<strong>CRITICAL ALERT:</strong> Clinical performance breakdown detected. Immediate corrective action required.
+</div>
+
+
 <h2>Recommended System Upgrade</h2>
 
 <a href="/ops-checkout/full-ops"
@@ -59,7 +69,13 @@ Activate Monthly Intelligence Monitoring ($99/mo)
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:25px;">
             <div style="background:white;padding:25px;border-radius:14px;">
-                <h2>Total Score Trend</h2>
+                <h2>Biggest Risk Right Now</h2>
+<div style="background:#fff7ed;padding:20px;border-radius:12px;margin-bottom:20px;">
+<strong>Clinical Operations Failure</strong><br>
+Score dropped to 0% — high regulatory and patient safety risk.
+</div>
+
+<h2>Total Score Trend</h2>
                 <canvas id="totalChart"></canvas>
             </div>
 

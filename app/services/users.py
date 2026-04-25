@@ -1,40 +1,25 @@
-﻿import sqlite3
-from passlib.hash import bcrypt
-
-DB = "app_data.db"
+﻿from passlib.hash import bcrypt
+from app.services.saas_tracking import get_conn, init_db
 
 def init_users_db():
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        password_hash TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-    conn.commit()
-    conn.close()
+    init_db()
 
 def create_user(email, password):
-    init_users_db()
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO users (email, password_hash) VALUES (?, ?)",
-        (email, bcrypt.hash(password))
-    )
-    conn.commit()
-    conn.close()
+    init_db()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO users (email, password_hash) VALUES (%s, %s)",
+                (email, bcrypt.hash(password))
+            )
+            conn.commit()
 
 def verify_user(email, password):
-    init_users_db()
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("SELECT id, password_hash FROM users WHERE email=?", (email,))
-    row = cur.fetchone()
-    conn.close()
+    init_db()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, password_hash FROM users WHERE email=%s", (email,))
+            row = cur.fetchone()
 
     if not row:
         return None
