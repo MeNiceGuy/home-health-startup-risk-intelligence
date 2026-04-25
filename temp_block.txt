@@ -1,0 +1,14 @@
+    return templates.TemplateResponse("operating_report.html", {
+        "request": request,
+        "total": total,
+        "financial": financial,
+        "operations": operations,
+        "staffing": staffing,
+        "compliance": compliance,
+        "lost_revenue": lost_revenue,
+        "delay_cost": delay_cost,
+        "total_impact": total_impact,
+        "root_html": root_html,
+        "labels": json.dumps(labels),
+        "scores": json.dumps(scores)
+    })

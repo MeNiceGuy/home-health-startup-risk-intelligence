@@ -1,6 +1,8 @@
-﻿from fastapi import APIRouter, Form
+﻿from fastapi import APIRouter, Form, Request, Request
 from fastapi.responses import HTMLResponse
 import json
+from app.services.templates import templates
+from app.services.templates import templates
 
 router = APIRouter(prefix="/operating-audit", tags=["Operating Intelligence"])
 
@@ -93,41 +95,13 @@ def field(label, name, value, tip):
     """
 
 @router.get("/", response_class=HTMLResponse)
-def form():
-    return f"""
-    <html>
-    <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-    body{{margin:0;font-family:Arial;background:#f8fafc;color:#0f172a;}}
-    .hero{{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;padding:55px 24px;text-align:center;}}
-    .wrap{{max-width:1100px;margin:-30px auto 40px;padding:20px;}}
-    .card{{background:white;padding:26px;border-radius:18px;box-shadow:0 12px 32px rgba(15,23,42,.12);margin-bottom:20px;}}
-    .grid{{display:grid;grid-template-columns:1fr 1fr;gap:18px;}}
-    .field{{position:relative;}}
-    label{{font-weight:bold;display:block;margin-bottom:6px;}}
-    input{{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;}}
-    .info{{color:#2563eb;cursor:pointer;}}
-    .tooltip{{display:none;position:absolute;background:#0f172a;color:white;padding:12px;border-radius:10px;font-size:13px;top:64px;z-index:99;width:290px;line-height:1.4;box-shadow:0 10px 25px rgba(0,0,0,.25);}}
-    .field:hover .tooltip{{display:block;}}
-    button{{background:#2563eb;color:white;padding:15px 22px;border:0;border-radius:10px;font-weight:bold;font-size:16px;}}
-    @media(max-width:800px){{.grid{{grid-template-columns:1fr}}.tooltip{{position:static;display:block;margin-top:8px;width:auto;}}}}
-    </style>
-    </head>
-    <body>
-    <div class="hero">
-      <h1>Operating Intelligence Audit</h1>
-      <p>Find root causes behind revenue leakage, compliance risk, staffing gaps, and scaling bottlenecks.</p>
-    </div>
-
-    <div class="wrap">
-    <form method="post" action="/operating-audit/run">
-
+def form(request: Request):
+    form_sections = f"""
     <div class="card"><h2>Revenue Cycle Intelligence</h2><div class="grid">
     {field("Days in A/R", "ar_days", "45", "Average days to collect payment after billing. Target: under 30 days.")}
     {field("Denial Rate (%)", "denial_rate", "15", "Percent of claims denied. Target: 10% or lower.")}
-    {field("Billing Process Defined?", "billing_process", "No", "Example: written process for coding, claim submission, denial follow-up, and payment posting.")}
-    {field("Who Handles Billing?", "billing_owner", "Owner", "Example: owner, biller, outsourced billing company, office manager.")}
+    {field("Billing Process Defined?", "billing_process", "No", "Example: coding, claim submission, denial follow-up, and payment posting.")}
+    {field("Who Handles Billing?", "billing_owner", "Owner", "Example: owner, biller, outsourced billing company, or office manager.")}
     </div></div>
 
     <div class="card"><h2>Operations Intelligence</h2><div class="grid">
@@ -141,22 +115,21 @@ def form():
     {field("Open Roles", "open_roles", "3", "Current unfilled positions affecting operations or growth.")}
     {field("Turnover Rate (%)", "turnover", "40", "Percent of staff leaving annually. Target: 30% or lower.")}
     {field("Hiring Process Defined?", "hiring_process", "No", "Example: recruiting source, screening, background checks, onboarding, training.")}
-    {field("Backup Coverage Available?", "backup_staff", "No", "Do you have backup staff for call-outs, emergencies, or schedule gaps?")}
+    {field("Backup Coverage Available?", "backup_staff", "No", "Backup staff for call-outs, emergencies, or schedule gaps.")}
     </div></div>
 
     <div class="card"><h2>Compliance Intelligence</h2><div class="grid">
     {field("QA Audit Score (%)", "qa_score", "75", "Internal audit score for documentation, care records, policy compliance, and quality checks. Target: 90%+.")}
-    {field("Policies Updated?", "policies_updated", "No", "Are policies current for HIPAA, patient rights, infection control, incident reporting, and operations?")}
-    {field("Incident Tracking System?", "incident_tracking", "No", "Do you formally track complaints, incidents, missed visits, errors, and corrective actions?")}
-    {field("HIPAA Compliance Score (%)", "hipaa_score", "85", "Readiness for privacy, security, access control, breach response, and record protection. Target: 95%+.")}
+    {field("Policies Updated?", "policies_updated", "No", "Current policies for HIPAA, patient rights, infection control, incident reporting, and operations.")}
+    {field("Incident Tracking System?", "incident_tracking", "No", "Formal tracking for complaints, incidents, missed visits, errors, and corrective actions.")}
+    {field("HIPAA Compliance Score (%)", "hipaa_score", "85", "Privacy, security, access control, breach response, and record protection readiness. Target: 95%+.")}
     </div></div>
-
-    <button type="submit">Run Root-Cause Intelligence Audit</button>
-    </form>
-    </div>
-    </body>
-    </html>
     """
+
+    return templates.TemplateResponse("operating_intake.html", {
+        "request": request,
+        "form_sections": form_sections
+    })
 
 @router.post("/run", response_class=HTMLResponse)
 def run(
@@ -300,3 +273,4 @@ const labels = {json.dumps(labels)};
     </body>
     </html>
     """
+
