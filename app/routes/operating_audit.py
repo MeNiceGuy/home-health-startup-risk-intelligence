@@ -114,11 +114,67 @@ operations_fix_value = int(delay_cost * 0.5)
 compliance_fix_value = 2000 if compliance < 80 else 0
 staffing_fix_value = 1500 if staffing < 80 else 0
 
+# PRIORITIZATION ENGINE
+actions = []
+
+if financial < 80:
+    actions.append(("Revenue System", revenue_fix_value, "Stabilize cash flow and reduce denials"))
+
+if operations < 80:
+    actions.append(("Operations System", operations_fix_value, "Improve intake speed and execution"))
+
+if compliance < 80:
+    actions.append(("Compliance System", compliance_fix_value, "Reduce regulatory exposure"))
+
+if staffing < 80:
+    actions.append(("Staffing System", staffing_fix_value, "Improve coverage and reduce burnout"))
+
+# Sort by highest ROI impact
+actions = sorted(actions, key=lambda x: x[1], reverse=True)
+
+priority_html = ""
+for i, (name, value, desc) in enumerate(actions):
+    priority_html += f"""
+    <div class="card">
+        <h3>Priority {i+1}: {name}</h3>
+        <p><strong>Impact Value:</strong> ${value}</p>
+        <p>{desc}</p>
+    </div>
+    """
+
 # ROI PROJECTIONS
 revenue_fix_value = int(lost_revenue * 0.7)
 operations_fix_value = int(delay_cost * 0.5)
 compliance_fix_value = 2000 if compliance < 80 else 0
 staffing_fix_value = 1500 if staffing < 80 else 0
+
+# PRIORITIZATION ENGINE
+actions = []
+
+if financial < 80:
+    actions.append(("Revenue System", revenue_fix_value, "Stabilize cash flow and reduce denials"))
+
+if operations < 80:
+    actions.append(("Operations System", operations_fix_value, "Improve intake speed and execution"))
+
+if compliance < 80:
+    actions.append(("Compliance System", compliance_fix_value, "Reduce regulatory exposure"))
+
+if staffing < 80:
+    actions.append(("Staffing System", staffing_fix_value, "Improve coverage and reduce burnout"))
+
+# Sort by highest ROI impact
+actions = sorted(actions, key=lambda x: x[1], reverse=True)
+
+priority_html = ""
+for i, (name, value, desc) in enumerate(actions):
+    priority_html += f"""
+    <div class="card">
+        <h3>Priority {i+1}: {name}</h3>
+        <p><strong>Impact Value:</strong> ${value}</p>
+        <p>{desc}</p>
+    </div>
+    """
 
     if total >= 80:
         tier = "Low Risk"
