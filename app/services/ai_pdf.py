@@ -4,40 +4,35 @@ from pathlib import Path
 from datetime import datetime
 import re
 
-def safe_filename(text):
-    text = text.lower().strip()
-    text = re.sub(r"[^a-z0-9]+", "_", text)
-    return text.strip("_") or "client"
+def safe_name(text):
+    return re.sub(r"[^a-zA-Z0-9_-]", "_", text or "client")
 
 def generate_ai_kit_pdf(client_data, kit_name, kit_content):
-    reports_dir = Path("generated_kits")
-    reports_dir.mkdir(exist_ok=True)
+    Path("generated_kits").mkdir(exist_ok=True)
 
-    agency = safe_filename(client_data.get("agency_name", "client"))
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = reports_dir / f"{agency}_{safe_filename(kit_name)}_{timestamp}.pdf"
+    agency = safe_name(client_data.get("agency_name", "client"))
+    kit = safe_name(kit_name)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"generated_kits/{agency}_{kit}_{stamp}.pdf"
 
-    doc = SimpleDocTemplate(str(filename))
+    doc = SimpleDocTemplate(filename)
     styles = getSampleStyleSheet()
-    content = []
+    story = []
 
-    content.append(Paragraph(f"Boswell Consulting Group | {kit_name}", styles["Title"]))
-    content.append(Spacer(1, 10))
+    story.append(Paragraph(f"Boswell Consulting Group | {kit_name}", styles["Title"]))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(f"Prepared For: {client_data.get('agency_name', 'Client Agency')}", styles["Normal"]))
+    story.append(Paragraph(f"Location: {client_data.get('location', 'N/A')}", styles["Normal"]))
+    story.append(Spacer(1, 12))
 
-    content.append(Paragraph(f"Prepared for: {client_data.get('agency_name', 'N/A')}", styles["Normal"]))
-    content.append(Paragraph(f"Owner: {client_data.get('owner_name', 'N/A')}", styles["Normal"]))
-    content.append(Paragraph(f"Location: {client_data.get('location', 'N/A')}", styles["Normal"]))
-    content.append(Paragraph(f"Target Start Date: {client_data.get('start_date', 'N/A')}", styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    for line in kit_content.split("\n"):
+    for line in kit_content.splitlines():
         line = line.strip()
         if not line:
-            content.append(Spacer(1, 8))
-        elif line.endswith(":") or line.startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.")):
-            content.append(Paragraph(line, styles["Heading3"]))
+            story.append(Spacer(1, 8))
+        elif line[:2] in ["1.", "2.", "3.", "4.", "5.", "6.", "7.", "8."]:
+            story.append(Paragraph(line, styles["Heading2"]))
         else:
-            content.append(Paragraph(line, styles["Normal"]))
+            story.append(Paragraph(line, styles["Normal"]))
 
-    doc.build(content)
-    return str(filename)
+    doc.build(story)
+    return filename

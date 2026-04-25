@@ -5,30 +5,28 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_custom_kit(client_data, kit_name, kit_slug):
     prompt = f"""
-You are writing a professional implementation kit for a home health startup client.
+Create a professional implementation kit for a home health agency.
 
-Company: {client_data.get("agency_name")}
-Owner: {client_data.get("owner_name")}
-Location: {client_data.get("location")}
-Target Start Date: {client_data.get("start_date")}
+Kit: {kit_name}
+Agency: {client_data.get("agency_name", "Client Agency")}
+Owner/Email: {client_data.get("owner_name", "Client")}
+Location: {client_data.get("location", "N/A")}
+State: {client_data.get("state", "N/A")}
 
-Purchased Kit: {kit_name}
+Include:
+1. Executive Summary
+2. Why This Matters
+3. Step-by-Step Implementation Plan
+4. Required Documents
+5. Compliance Considerations
+6. Common Mistakes
+7. 30-Day Action Plan
+8. Disclaimer: educational guidance, not legal advice
 
-Create a tailored business implementation document with:
-1. Executive summary
-2. Why this matters
-3. Step-by-step action plan
-4. Required documents
-5. Common mistakes to avoid
-6. 30-day execution plan
-7. Disclaimer: educational guidance, not legal advice
-
-Keep it professional, practical, and specific to the client.
+Make it specific, practical, and professional.
 """
-
     response = client.responses.create(
         model="gpt-4.1-mini",
         input=prompt
     )
-
     return response.output_text

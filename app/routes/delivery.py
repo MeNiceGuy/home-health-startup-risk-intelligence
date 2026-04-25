@@ -1,8 +1,7 @@
 ﻿from fastapi import APIRouter, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from app.services.ai_writer import generate_custom_kit
 from app.services.ai_pdf import generate_ai_kit_pdf
-from app.services.tracking import save_purchase
 import stripe
 
 router = APIRouter(prefix="/deliver", tags=["Delivery"])
@@ -18,19 +17,17 @@ def deliver_kit(slug: str, session_id: str = Query(None)):
         except Exception:
             customer_email = "unknown"
 
+    kit_name = slug.replace("-", " ").title()
+
     client_data = {
         "agency_name": "Client Agency",
         "owner_name": customer_email,
         "location": "N/A",
-        "start_date": "N/A"
+        "state": "N/A"
     }
 
-    kit_name = slug.replace("-", " ").title()
-
-    content = generate_custom_kit(client_data, kit_name, slug)
-    pdf_path = generate_ai_kit_pdf(client_data, kit_name, content)
-
-    save_purchase(customer_email, slug, session_id or "N/A", pdf_path)
+    kit_content = generate_custom_kit(client_data, kit_name, slug)
+    pdf_path = generate_ai_kit_pdf(client_data, kit_name, kit_content)
 
     return f"""
     <html>
@@ -38,8 +35,13 @@ def deliver_kit(slug: str, session_id: str = Query(None)):
         <h1>Your Custom Kit Is Ready</h1>
         <p><strong>Kit:</strong> {kit_name}</p>
         <p><strong>Email:</strong> {customer_email}</p>
-        <a href="/download-kit?file={pdf_path}">Download Your Custom Kit</a><br><br>
+        <a href="/deliver/download?file={pdf_path}">Download Your AI-Generated Kit</a>
+        <br><br>
         <a href="/dashboard/">Go to Dashboard</a>
     </body>
     </html>
     """
+
+@router.get("/download")
+def download_generated_kit(file: str):
+    return FileResponse(file, filename=file.split("/")[-1])
