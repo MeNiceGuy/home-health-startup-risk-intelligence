@@ -3,6 +3,9 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 from datetime import datetime
 from app.services.saas_tracking import get_conn, init_db, USE_POSTGRES
+from app.services.file_ai_analysis import analyze_uploaded_business_file
+from app.services.client_timeline import add_timeline_event, get_client_timeline, init_timeline_db
+from app.services.offer_mapper import attach_offer_buttons
 
 router = APIRouter(prefix="/consultant", tags=["Consultant Dashboard"])
 
@@ -96,7 +99,7 @@ def dashboard(tenant: str = "demo"):
         client_rows += f"""
         <tr>
             <td>{c[0]}</td><td>{c[1]}</td><td>{c[2]}</td><td>{str(c[3])[:10]}</td>
-            <td><a href="/operating-audit/?tenant={tenant}&client={c[0]}">Run Audit</a></td>
+            <td><a href="/operating-audit/?tenant={tenant}&client={c[0]}">Run Audit</a> | <a href="/consultant/client/{c[0]}?tenant={tenant}">Timeline</a></td>
         </tr>
         """
     if not client_rows:
@@ -193,9 +196,11 @@ def dashboard(tenant: str = "demo"):
 
       <div class="card">
         <h2>Consultant Tools</h2>
+        <a class="btn" style="background:#635bff;" href="/stripe-connect/start?tenant={tenant}">Connect Stripe Payouts</a>
         <a class="btn" href="/operating-audit/?tenant={tenant}">Run Operating Audit</a>
         <a class="btn" href="/audit/?tenant={tenant}">Run Startup Audit</a>
         <a class="btn" href="/client/dashboard?email=client@example.com">Open Client Dashboard</a>
+        <a class="btn" style="background:#16a34a;" href="/earnings/?tenant={tenant}">View Earnings</a>
       </div>
     </div>
     </body>
@@ -234,7 +239,9 @@ async def upload(tenant: str = Form("demo"), client_name: str = Form("client"), 
     with open(path, "wb") as f:
         f.write(await file.read())
 
-    report = generate_basic_file_report(client_name, filename)
+    report_text = analyze_uploaded_business_file(client_name, filename, str(path))
+    report = "<br>".join([line for line in report_text.splitlines()])
+    report += attach_offer_buttons(report_text).replace("{tenant}", tenant).replace("{client}", client_name)
 
     conn = get_conn()
     cur = conn.cursor()
@@ -245,6 +252,15 @@ async def upload(tenant: str = Form("demo"), client_name: str = Form("client"), 
     )
     conn.commit()
     conn.close()
+
+    add_timeline_event(
+        tenant,
+        client_name,
+        "File Upload",
+        "Business file uploaded and analyzed",
+        f"Uploaded file: {filename}",
+        f"/consultant/file-report/{cur.lastrowid}?tenant={tenant}"
+    )
 
     return HTMLResponse(f"<h1>File Uploaded & Report Created</h1><p>{filename}</p><a href='/consultant/dashboard?tenant={tenant}'>Back to Dashboard</a>")
 
@@ -264,7 +280,8 @@ def file_report(file_id: int, tenant: str = "demo"):
     return f"""
     <html><body style="font-family:Arial;background:#f8fafc;padding:40px;">
     <div style="max-width:900px;margin:auto;background:white;padding:35px;border-radius:18px;">
-    <h1>Uploaded File Intelligence Report</h1>
+    <h1>AI File Intelligence Report</h1>
+    <p>This report reviews the uploaded business document for operational, compliance, staffing, revenue cycle, and scalability risks.</p>
     <p><strong>Client:</strong> {row[0]}</p>
     <p><strong>File:</strong> {row[1]}</p>
     {row[2]}
@@ -286,4 +303,18 @@ def add_client(tenant: str = Form("demo"), client_name: str = Form(...), client_
     conn.commit()
     conn.close()
 
+    add_timeline_event(
+        tenant,
+        client_name,
+        "Client Created",
+        "Client profile created",
+        f"Stage: {client_stage}. Email: {client_email}",
+        f"/consultant/client/{client_name}?tenant={tenant}"
+    )
+
     return HTMLResponse(f"<h1>Client Added</h1><p>{client_name}</p><a href='/consultant/dashboard?tenant={tenant}'>Back to Dashboard</a>")
+
+
+
+
+

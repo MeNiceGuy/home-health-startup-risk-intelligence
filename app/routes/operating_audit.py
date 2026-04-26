@@ -91,6 +91,17 @@ def form(request: Request):
       <div><label>HIPAA Score (%)</label><input name='hipaa_score' value='85'><div class='tooltip'>Privacy, security, access control, and records protection readiness. Target: 95%+.</div></div>
     </div></div>
     """
+    from app.services.client_timeline import add_timeline_event
+
+    add_timeline_event(
+        tenant,
+        client_name,
+        "Audit Completed",
+        "Operating audit completed",
+        f"Score: {total}, Financial: {financial}, Ops: {operations}",
+        ""
+    )
+
     return templates.TemplateResponse("operating_intake.html", {"request": request, "form_sections": form_sections,
         "tenant": tenant})
 
@@ -162,5 +173,16 @@ def run(
         "scores": json.dumps([financial, operations, staffing, compliance]),
         "tenant": get_tenant(request)
     }
+
+    from app.services.client_timeline import add_timeline_event
+
+    add_timeline_event(
+        tenant,
+        client_name,
+        "Audit Completed",
+        "Operating audit completed",
+        f"Score: {total}, Financial: {financial}, Ops: {operations}",
+        ""
+    )
 
     return templates.TemplateResponse("operating_report.html", context)

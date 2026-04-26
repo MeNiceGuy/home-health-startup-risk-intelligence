@@ -41,3 +41,31 @@ def get_tenant(request):
         return {"name": row[0], "logo": row[1] or "", "color": row[2] or "#2563eb", "subdomain": sub}
 
     return {"name": "Default Intelligence System", "logo": "", "color": "#2563eb", "subdomain": sub}
+from app.services.saas_tracking import get_conn, init_db, USE_POSTGRES
+
+def get_tenant_by_subdomain(subdomain):
+    init_db()
+    conn = get_conn()
+    cur = conn.cursor()
+    p = "%s" if USE_POSTGRES else "?"
+
+    cur.execute(
+        f"SELECT name, subdomain, stripe_account FROM tenants WHERE subdomain={p}",
+        (subdomain,)
+    )
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row:
+        return {
+            "name": row[0],
+            "subdomain": row[1],
+            "stripe_account": row[2] or ""
+        }
+
+    return {
+        "name": "Default",
+        "subdomain": subdomain,
+        "stripe_account": ""
+    }

@@ -1,8 +1,9 @@
 ﻿import os
 import stripe
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import RedirectResponse
 from app.services.settings import FREE_MODE, BASE_URL
+from app.services.saas_tracking import get_conn, init_db, USE_POSTGRES
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
@@ -15,8 +16,23 @@ PRODUCTS = {
     "compliance": {"name": "Compliance Policy Pack", "price": 19900}
 }
 
+def get_stripe_account(tenant):
+    if not tenant:
+        return ""
+
+    init_db()
+    conn = get_conn()
+    cur = conn.cursor()
+    p = "%s" if USE_POSTGRES else "?"
+
+    cur.execute(f"SELECT stripe_account FROM tenants WHERE subdomain={p}", (tenant,))
+    row = cur.fetchone()
+    conn.close()
+
+    return row[0] if row and row[0] else ""
+
 @router.get("/{slug}")
-def template_checkout(slug: str):
+def template_checkout(slug: str, tenant: str = Query(""), client: str = Query("")):
     product = PRODUCTS.get(slug)
 
     if not product:
@@ -25,10 +41,13 @@ def template_checkout(slug: str):
     if FREE_MODE:
         return RedirectResponse(f"/templates/{slug}?session_id=free-demo-{slug}", status_code=303)
 
-    session = stripe.checkout.Session.create(
-        mode="payment",
-        payment_method_types=["card"],
-        line_items=[{
+    stripe_account = get_stripe_account(tenant)
+    platform_fee = int(product["price"] * 0.20)
+
+    session_args = {
+        "mode": "payment",
+        "payment_method_types": ["card"],
+        "line_items": [{
             "price_data": {
                 "currency": "usd",
                 "product_data": {"name": product["name"]},
@@ -36,13 +55,25 @@ def template_checkout(slug: str):
             },
             "quantity": 1
         }],
-        success_url=f"{BASE_URL}/templates/{slug}?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{BASE_URL}/operating-audit/",
-        metadata={
+        "success_url": f"{BASE_URL}/templates/{slug}?session_id={{CHECKOUT_SESSION_ID}}",
+        "cancel_url": f"{BASE_URL}/consultant/dashboard?tenant={tenant}",
+        "metadata": {
             "product_slug": slug,
             "product_type": "template",
-            "amount": str(product["price"])
+            "tenant": tenant,
+            "client": client,
+            "amount": str(product["price"]),
+            "platform_fee": str(platform_fee)
         }
-    )
+    }
 
+    if stripe_account:
+        session_args["payment_intent_data"] = {
+            "application_fee_amount": platform_fee,
+            "transfer_data": {
+                "destination": stripe_account
+            }
+        }
+
+    session = stripe.checkout.Session.create(**session_args)
     return RedirectResponse(session.url)
