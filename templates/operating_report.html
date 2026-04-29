@@ -1,0 +1,366 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Home Health Revenue Intelligence Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --red:#dc2626;
+  --red-dark:#991b1b;
+  --blue:#2563eb;
+  --green:#16a34a;
+  --dark:#0f172a;
+  --muted:#64748b;
+  --light:#f8fafc;
+  --card:#ffffff;
+  --border:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+  color:var(--dark);
+}
+
+.container{
+  max-width:1180px;
+  margin:auto;
+  padding:32px 22px 60px;
+}
+
+.hero{
+  background:linear-gradient(135deg,#fff 0%,#fee2e2 100%);
+  border:1px solid #fecaca;
+  border-radius:28px;
+  padding:38px;
+  box-shadow:0 20px 45px rgba(15,23,42,.08);
+  margin-bottom:26px;
+}
+
+.badge{
+  display:inline-block;
+  background:#fee2e2;
+  color:var(--red-dark);
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:14px;
+  margin-bottom:16px;
+}
+
+h1{
+  font-size:44px;
+  line-height:1.05;
+  margin:0 0 14px;
+}
+
+.loss{
+  color:var(--red);
+}
+
+.subtitle{
+  font-size:18px;
+  color:#334155;
+  max-width:780px;
+  line-height:1.55;
+}
+
+.cta-row{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:26px;
+}
+
+.btn{
+  display:inline-block;
+  text-decoration:none;
+  padding:14px 20px;
+  border-radius:14px;
+  font-weight:800;
+}
+
+.btn-primary{
+  background:var(--blue);
+  color:white;
+}
+
+.btn-secondary{
+  background:white;
+  color:var(--dark);
+  border:1px solid var(--border);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin:24px 0;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 12px 30px rgba(15,23,42,.06);
+}
+
+.card h3{
+  margin:0 0 8px;
+  font-size:17px;
+}
+
+.score{
+  font-size:36px;
+  font-weight:900;
+  margin:8px 0;
+}
+
+.risk{
+  font-weight:800;
+  padding:6px 10px;
+  border-radius:999px;
+  display:inline-block;
+  font-size:13px;
+}
+
+.critical{background:#fee2e2;color:#991b1b}
+.warning{background:#fef3c7;color:#92400e}
+.stable{background:#dcfce7;color:#166534}
+
+.section{
+  margin-top:28px;
+}
+
+.section-title{
+  font-size:28px;
+  margin-bottom:12px;
+}
+
+.impact{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.impact-box{
+  background:#0f172a;
+  color:white;
+  border-radius:24px;
+  padding:28px;
+}
+
+.impact-number{
+  font-size:38px;
+  font-weight:900;
+  color:#f87171;
+}
+
+.solution{
+  background:linear-gradient(135deg,#eff6ff,#ffffff);
+  border:1px solid #bfdbfe;
+  border-radius:26px;
+  padding:30px;
+  margin-top:28px;
+}
+
+.solution h2{
+  margin-top:0;
+}
+
+.checks{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+
+.check{
+  background:white;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  font-weight:700;
+}
+
+.diag{
+  background:white;
+  border-left:6px solid var(--red);
+  border-radius:18px;
+  padding:22px;
+  margin:16px 0;
+  box-shadow:0 10px 24px rgba(15,23,42,.06);
+}
+
+.diag h3{
+  margin-top:0;
+  color:var(--red-dark);
+}
+
+.offer-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.offer{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:24px;
+}
+
+.final-cta{
+  text-align:center;
+  background:linear-gradient(135deg,#dc2626,#991b1b);
+  color:white;
+  padding:42px;
+  border-radius:30px;
+  margin-top:34px;
+}
+
+.final-cta h2{
+  font-size:34px;
+  margin:0 0 10px;
+}
+
+@media(max-width:900px){
+  .grid,.impact,.offer-row,.checks{
+    grid-template-columns:1fr;
+  }
+
+  h1{
+    font-size:34px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <section class="hero">
+    <div class="badge">Home Health Revenue Intelligence Audit</div>
+
+    <h1>Your Agency Is Losing <span class="loss">${{ "{:,.0f}".format(total_impact|default(0)) }}</span> in Estimated Impact</h1>
+
+    <p class="subtitle">
+      Based on your operational audit, the system identified measurable weaknesses across revenue cycle,
+      operations, staffing, and compliance. The goal is simple: identify the root causes, quantify the loss,
+      and recommend the system needed to fix it.
+    </p>
+
+    <div class="cta-row">
+      <a href="#solution" class="btn btn-primary">Fix These Issues Now</a>
+      <a href="#diagnosis" class="btn btn-secondary">View Root Causes</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h3>Financial</h3>
+      <div class="score">{{ financial }}%</div>
+      <span class="risk {% if financial < 65 %}critical{% elif financial < 80 %}warning{% else %}stable{% endif %}">
+        {% if financial < 65 %}Critical{% elif financial < 80 %}Weak{% else %}Stable{% endif %}
+      </span>
+    </div>
+
+    <div class="card">
+      <h3>Operations</h3>
+      <div class="score">{{ operations }}%</div>
+      <span class="risk {% if operations < 65 %}critical{% elif operations < 80 %}warning{% else %}stable{% endif %}">
+        {% if operations < 65 %}Critical{% elif operations < 80 %}Weak{% else %}Stable{% endif %}
+      </span>
+    </div>
+
+    <div class="card">
+      <h3>Staffing</h3>
+      <div class="score">{{ staffing }}%</div>
+      <span class="risk {% if staffing < 65 %}critical{% elif staffing < 80 %}warning{% else %}stable{% endif %}">
+        {% if staffing < 65 %}Critical{% elif staffing < 80 %}Weak{% else %}Stable{% endif %}
+      </span>
+    </div>
+
+    <div class="card">
+      <h3>Compliance</h3>
+      <div class="score">{{ compliance }}%</div>
+      <span class="risk {% if compliance < 65 %}critical{% elif compliance < 80 %}warning{% else %}stable{% endif %}">
+        {% if compliance < 65 %}Critical{% elif compliance < 80 %}Weak{% else %}Stable{% endif %}
+      </span>
+    </div>
+  </section>
+
+  <section class="section impact">
+    <div class="impact-box">
+      <p>Estimated Lost Revenue</p>
+      <div class="impact-number">${{ "{:,.0f}".format(lost_revenue|default(0)) }}</div>
+    </div>
+
+    <div class="impact-box">
+      <p>Operational Delay Cost</p>
+      <div class="impact-number">${{ "{:,.0f}".format(delay_cost|default(0)) }}</div>
+    </div>
+  </section>
+
+  <section id="diagnosis" class="section">
+    <h2 class="section-title">Root Cause Diagnosis</h2>
+    <p class="subtitle">
+      These issues are not random. They point to missing systems, weak controls, and execution gaps.
+    </p>
+
+    {{ root_html|safe }}
+  </section>
+
+  {% if bundle %}
+  <section id="solution" class="solution">
+    <h2>Recommended System: {{ bundle.name }}</h2>
+    <p>{{ bundle.desc }}</p>
+
+    <div class="checks">
+      <div class="check">✔ Revenue recovery system</div>
+      <div class="check">✔ Operational workflow fixes</div>
+      <div class="check">✔ Staffing stability improvements</div>
+      <div class="check">✔ Compliance readiness controls</div>
+    </div>
+
+    <h3>Investment: {{ bundle.price }}</h3>
+
+    <a href="{{ bundle.link }}" class="btn btn-primary">Fix My Agency Now</a>
+  </section>
+  {% endif %}
+
+  <section class="section">
+    <h2 class="section-title">Low-Risk Entry Options</h2>
+
+    <div class="offer-row">
+      <div class="offer">
+        <h3>Full Audit PDF</h3>
+        <p>Download a professional report showing your scores, risks, and estimated financial impact.</p>
+        <h2>$49</h2>
+        <a href="/checkout/audit-pdf" class="btn btn-primary">Get Audit PDF</a>
+      </div>
+
+      <div class="offer">
+        <h3>Custom Fix Plan</h3>
+        <p>Receive a step-by-step action plan to correct your agency’s weakest operational areas.</p>
+        <h2>$99</h2>
+        <a href="/checkout/fix-plan" class="btn btn-primary">Get Fix Plan</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <h2>Stop Losing Money Every Month</h2>
+    <p>Your agency does not need more guesswork. It needs a structured revenue and operations system.</p>
+    <a href="#solution" class="btn btn-secondary">Start Fixing My Agency</a>
+  </section>
+
+</div>
+</body>
+</html>

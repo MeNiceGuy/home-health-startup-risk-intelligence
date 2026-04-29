@@ -1,4 +1,14 @@
-﻿from fastapi import FastAPI
+﻿from app.routes.cms_admin import router as cms_admin_router
+from app.routes.cart import router as cart_router
+from app.routes.kit_checkout import router as kit_checkout_router
+from app.routes.tracking import router as tracking_router
+from app.routes.revenue import router as revenue_router
+from app.routes.booking import router as booking_router
+from app.routes.upsell import router as upsell_router
+from app.routes.leads import router as leads_router
+from fastapi import FastAPI
+
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -132,4 +142,38 @@ def home():
 </body>
     </html>
     """
+
+
+
+
+
+
+
+
+
+app.include_router(leads_router)
+
+
+
+app.include_router(upsell_router)
+
+
+app.include_router(booking_router)
+
+
+app.include_router(revenue_router)
+
+
+app.include_router(tracking_router)
+
+
+app.include_router(kit_checkout_router)
+
+
+
+app.include_router(cart_router)
+
+
+app.include_router(cms_admin_router)
+
 
