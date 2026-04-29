@@ -4,6 +4,46 @@ from app.services.benchmark_audit import audit_from_inputs
 
 router = APIRouter()
 
+def build_timeline(findings):
+    ordered = sorted(
+        [f for f in findings if isinstance(f, dict)],
+        key=lambda x: x.get("estimated_impact", 0),
+        reverse=True
+    )
+
+    weeks = [
+        ("Week 1", "Stabilize the highest revenue leakage area."),
+        ("Week 2", "Implement workflow controls and accountability checks."),
+        ("Week 3", "Strengthen staffing, compliance, and documentation processes."),
+        ("Week 4", "Review results, monitor KPIs, and adjust operating cadence.")
+    ]
+
+    html = ""
+    for i, item in enumerate(weeks):
+        focus = ordered[i]["label"] if i < len(ordered) else "Performance Monitoring"
+        html += f"<li><strong>{item[0]}:</strong> {focus} — {item[1]}</li>"
+
+    return html
+
+def build_expected_outcomes(findings):
+    outcomes = []
+
+    keys = [f.get("key") for f in findings if isinstance(f, dict)]
+
+    if "denial_rate" in keys or "ar_days" in keys:
+        outcomes.append("Improved revenue-cycle discipline and reduced preventable cash-flow leakage.")
+    if "intake_time" in keys or "missed_visits" in keys:
+        outcomes.append("Faster intake execution, fewer missed visits, and stronger operational control.")
+    if "staff_turnover" in keys:
+        outcomes.append("Better staffing stability, coverage reliability, and reduced continuity risk.")
+    if "compliance_findings" in keys:
+        outcomes.append("Improved compliance readiness and stronger internal audit discipline.")
+
+    if not outcomes:
+        outcomes.append("Maintain benchmark performance through ongoing monitoring.")
+
+    return "".join([f"<li>{o}</li>" for o in outcomes])
+
 @router.get("/operating-audit/", response_class=HTMLResponse)
 async def operating_audit(request: Request):
     params = request.query_params
@@ -20,52 +60,51 @@ async def operating_audit(request: Request):
     }
 
     audit = audit_from_inputs(inputs)
+    findings = [f for f in audit.get("findings", []) if isinstance(f, dict)]
 
-    cards = ""
+    recommended = ",".join(audit.get("recommended_kits", []))
+    timeline_html = build_timeline(findings)
+    outcomes_html = build_expected_outcomes(findings)
+
+    category_cards = ""
     bars = ""
-    for category, score in audit["categories"].items():
+    for category, score in audit.get("categories", {}).items():
         color = "#16a34a" if score >= 85 else "#f59e0b" if score >= 70 else "#dc2626"
-        cards += f"<div class='card'><p>{category}</p><h2 style='color:{color};'>{score}%</h2></div>"
+        category_cards += f"<div class='card'><p>{category}</p><h2 style='color:{color};'>{score}%</h2></div>"
         bars += f"<div class='bar-row'><span>{category}</span><div class='bar-bg'><div class='bar-fill' style='width:{score}%;background:{color};'></div></div><strong>{score}%</strong></div>"
 
-    findings = ""
-    for f in audit["findings"]:
+    top_leaks = ""
+    for f in sorted(findings, key=lambda x: x.get("estimated_impact", 0), reverse=True)[:3]:
+        top_leaks += f"<div class='finding'><strong>{f['label']}</strong>: ${f.get('estimated_impact',0):,}/month</div>"
+
+    findings_html = ""
+    for f in findings:
         color = "#16a34a" if f["score"] >= 85 else "#f59e0b" if f["score"] >= 70 else "#dc2626"
         gap = "At or below benchmark" if f["gap"] <= 0 else f"+{f['gap']} {f['unit']} above benchmark"
-        findings += f"""
+
+        findings_html += f"""
         <div class='finding'>
             <h3>{f['label']} <span style='color:{color};'>({f['risk']})</span></h3>
             <p><strong>Your Input:</strong> {f['value']} {f['unit']} | <strong>Benchmark:</strong> {f['benchmark']} {f['unit']}</p>
             <p><strong>Gap:</strong> {gap}</p>
-            <p><strong>Estimated Monthly Impact:</strong> <span class="loss">${audit.get("total_estimated_impact", audit.get("estimated_loss",0)):,}</span>{f.get("estimated_impact", 0):,}</p>
+            <p><strong>Estimated Monthly Impact:</strong> ${f.get('estimated_impact',0):,}</p>
             <p><strong>Why this matters:</strong> {f['why']}</p>
         </div>
         """
 
     cms = audit.get("cms_data", {})
     agency_profile = audit.get("agency_cms_profile", {})
-    rankings = audit.get("percentile_rankings", {})
+    agency_html = f"<p>{agency_profile.get('message', 'No CMS agency match found.')}</p>"
 
-    agency_html = ""
     if agency_profile.get("matched"):
         rows = ""
         for k, v in list(agency_profile.get("profile", {}).items())[:10]:
             rows += f"<tr><td><strong>{k}</strong></td><td>{v}</td></tr>"
         agency_html = f"<table>{rows}</table>"
-    else:
-        agency_html = f"<p>{agency_profile.get('message', 'No agency-level CMS match found.')}</p>"
-
-    percentile_html = ""
-    if rankings:
-        for metric, data in list(rankings.items())[:6]:
-            percentile_html += f"<p><strong>{metric}:</strong> {data.get('percentile')} percentile | Value: {data.get('value')}</p>"
-    else:
-        percentile_html = "<p>Percentile ranking unavailable for this match because usable numeric CMS performance fields were not found.</p>"
 
     return f"""
     <html>
     <head>
-    <title>Home Health Performance Audit</title>
     <style>
         body{{margin:0;font-family:Arial;background:#f3f4f6;color:#111827;}}
         .wrap{{max-width:1150px;margin:auto;padding:40px 24px;}}
@@ -81,66 +120,93 @@ async def operating_audit(request: Request):
         .bar-fill{{height:16px;}}
         .cta{{display:inline-block;background:#dc2626;color:white;padding:15px 24px;border-radius:12px;text-decoration:none;font-weight:bold;}}
         table{{width:100%;border-collapse:collapse;}} td{{padding:8px;border-bottom:1px solid #e5e7eb;}}
+        li{{margin-bottom:10px;line-height:1.5;}}
     </style>
     </head>
     <body>
-    <div class="wrap">
+    <div class='wrap'>
 
-        <div class="hero">
+        <div class='hero'>
+{("<div style='background:#dcfce7;color:#166534;padding:14px;border-radius:12px;margin-bottom:18px;font-weight:bold;'>Executive PDF emailed successfully.</div>" if params.get("sent") == "1" else "")}
             <h1>Home Health Performance Audit</h1>
             <p>Benchmark-driven operational, staffing, compliance, and revenue cycle analysis.</p>
-            <p><strong>Total Score:</strong> <span class="loss">{audit["total_score"]}%</span></p>
-            <p><strong>Confidence / Data Quality:</strong> {audit["confidence"]} ({audit.get("data_quality", "N/A")}% data quality)</p>
-            <p><strong>Estimated Monthly Impact:</strong> <span class="loss">${audit.get("total_estimated_impact", audit.get("estimated_loss",0)):,}</span>{audit["estimated_loss"]:,}</span></p>
-            <a class="cta" href="/kits?recommended={",".join(audit.get("recommended_kits", []))}">View Recommended Fix Systems</a>
+            <p><strong>Total Score:</strong> <span class='loss'>{audit.get("total_score")}%</span></p>
+            <p><strong>Performance Tier:</strong> {audit.get("tier","N/A")}</p>
+            <p><strong>Confidence / Data Quality:</strong> {audit.get("confidence")} ({audit.get("data_quality")}% data quality)</p>
+            <p><strong>Estimated Monthly Impact:</strong> <span class='loss'>${audit.get("total_estimated_impact",0):,}</span></p>
+            <a class='cta' href='/kits?recommended={recommended}'>View Recommended Fix Systems</a>
+
+<form method='get' action='/send/audit-pdf' style='margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;'>
+    <input name='email' type='email' placeholder='Email this audit PDF' required style='padding:13px;border-radius:10px;border:1px solid #d1d5db;min-width:260px;'>
+
+    <input type='hidden' name='agency' value='{inputs["agency_name"]}'>
+    <input type='hidden' name='state' value='{inputs["state"]}'>
+    <input type='hidden' name='denial_rate' value='{inputs["denial_rate"]}'>
+    <input type='hidden' name='ar_days' value='{inputs["ar_days"]}'>
+    <input type='hidden' name='intake_time' value='{inputs["intake_time"]}'>
+    <input type='hidden' name='missed_visits' value='{inputs["missed_visits"]}'>
+    <input type='hidden' name='staff_turnover' value='{inputs["staff_turnover"]}'>
+    <input type='hidden' name='compliance_findings' value='{inputs["compliance_findings"]}'>
+
+    <button class='cta' style='border:none;background:#111827;cursor:pointer;'>Email Executive PDF</button>
+</form>
+<a class='cta' style='background:#111827;margin-left:10px;' href='/download/audit-pdf?agency={inputs["agency_name"]}&state={inputs["state"]}&denial_rate={inputs["denial_rate"]}&ar_days={inputs["ar_days"]}&intake_time={inputs["intake_time"]}&missed_visits={inputs["missed_visits"]}&staff_turnover={inputs["staff_turnover"]}&compliance_findings={inputs["compliance_findings"]}'>Download Executive PDF</a>
         </div>
 
-        <div class="grid">{cards}</div>
+        <div class='grid'>{category_cards}</div>
 
-        <div class="panel">
+        <div class='panel'>
+            <h2>Executive Summary</h2>
+            <p>{audit.get("executive_summary",{}).get("narrative","This audit identifies operational and financial risks requiring structured corrective action.")}</p>
+        </div>
+
+        <div class='panel'>
+            <h2>Priority Roadmap</h2>
+            <ul>
+                {''.join([f"<li><strong>Priority {r['priority']}:</strong> {r['focus']} — {r['action']}</li>" for r in audit.get("roadmap",[])])}
+            </ul>
+        </div>
+
+        <div class='panel'>
+            <h2>Implementation Timeline</h2>
+            <ul>{timeline_html}</ul>
+        </div>
+
+        <div class='panel'>
+            <h2>Expected Outcomes</h2>
+            <p>If implemented effectively, the agency can reasonably target the following operational improvements:</p>
+            <ul>{outcomes_html}</ul>
+        </div>
+
+        <div class='panel'>
             <h2>Performance Visualization</h2>
             {bars}
         </div>
 
-        <div class="panel">
+        <div class='panel'>
             <h2>CMS Benchmark Comparison</h2>
-            <p><strong>CMS Denial Rate Avg:</strong> {(cms.get("cms_denial_avg") or "N/A")}</p>
-            <p><strong>CMS A/R Days Avg:</strong> {cms.get("cms_ar_avg", "N/A")}</p>
+            <p><strong>CMS Denial Rate Avg:</strong> {cms.get("cms_denial_avg") or "N/A"}</p>
+            <p><strong>CMS A/R Days Avg:</strong> {cms.get("cms_ar_avg") or "N/A"}</p>
         </div>
 
-        <div class="panel">
+        <div class='panel'>
             <h2>Agency-Level CMS Match</h2>
             {agency_html}
         </div>
 
-        <div class="panel">
-            <h2>CMS Percentile Ranking</h2>
-            {percentile_html}
+        <div class='panel'>
+            <h2>Top Revenue Leakage Drivers</h2>
+            {top_leaks}
         </div>
 
-        <div class="panel">
-            <h2>Top Revenue Leakage Drivers</h2>
-<p>Largest sources of financial loss identified in this audit.</p></h2>
+        <div class='panel'>
+            <h2>Operational & Financial Risk Analysis</h2>
             <p>Each finding shows the input, benchmark, gap, risk signal, and business meaning.</p>
         </div>
 
-        {
-    "".join(
-        sorted(
-            [
-                f"<div class='finding'><strong>{x.get('label','Unknown')}</strong>: ${x.get('estimated_impact',0):,}/month</div>"
-                for x in audit["findings"] if isinstance(x, dict)
-            ],
-            key=lambda z: int(z.split("$")[1].replace(",","").split("/")[0]),
-            reverse=True
-        )[:3]
-    )
-}
+        {findings_html}
 
-<h2>Operational & Financial Risk Analysis</h2>
-{findings}
-
-        <div class="panel">
+        <div class='panel'>
             <h2>Source Notes</h2>
             <p>This audit uses benchmark-based decision logic and can reference CMS Provider Data Catalog Home Health datasets when available.</p>
 
@@ -154,9 +220,68 @@ async def operating_audit(request: Request):
     </html>
     """
 
+@router.get("/download/audit-pdf")
+def download_audit_pdf(
+    agency: str = "",
+    state: str = "",
+    denial_rate: float = 18,
+    ar_days: float = 48,
+    intake_time: float = 5,
+    missed_visits: float = 9,
+    staff_turnover: float = 32,
+    compliance_findings: float = 4
+):
+    from fastapi.responses import FileResponse
+    from app.services.pdf_engine import generate_consulting_audit_pdf
+
+    inputs = {
+        "agency_name": agency,
+        "state": state,
+        "denial_rate": denial_rate,
+        "ar_days": ar_days,
+        "intake_time": intake_time,
+        "missed_visits": missed_visits,
+        "staff_turnover": staff_turnover,
+        "compliance_findings": compliance_findings
+    }
+
+    path = generate_consulting_audit_pdf(inputs, "audit_report.pdf")
+    return FileResponse(path, media_type="application/pdf", filename="home_health_performance_audit.pdf")
 
 
+@router.get("/send/audit-pdf")
+def send_audit_pdf(
+    email: str,
+    agency: str = "",
+    state: str = "",
+    denial_rate: float = 18,
+    ar_days: float = 48,
+    intake_time: float = 5,
+    missed_visits: float = 9,
+    staff_turnover: float = 32,
+    compliance_findings: float = 4
+):
+    from fastapi.responses import RedirectResponse
+    from app.services.pdf_engine import generate_consulting_audit_pdf
+    from app.services.pdf_emailer import send_pdf_email
 
+    inputs = {
+        "agency_name": agency,
+        "state": state,
+        "denial_rate": denial_rate,
+        "ar_days": ar_days,
+        "intake_time": intake_time,
+        "missed_visits": missed_visits,
+        "staff_turnover": staff_turnover,
+        "compliance_findings": compliance_findings
+    }
 
+    path = generate_consulting_audit_pdf(inputs, "audit_report.pdf")
+    send_pdf_email(email, path)
+
+    return RedirectResponse(
+        f"/operating-audit/?agency={agency}&state={state}&denial_rate={denial_rate}&ar_days={ar_days}&intake_time={intake_time}&missed_visits={missed_visits}&staff_turnover={staff_turnover}&compliance_findings={compliance_findings}&sent=1",
+        status_code=303
+    )
 
 

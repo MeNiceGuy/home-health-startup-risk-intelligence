@@ -1,4 +1,39 @@
-﻿from app.services.cms_data import get_cms_benchmarks, get_agency_cms_profile, extract_performance_metrics, get_percentile_rankings
+﻿
+def build_executive_summary(audit):
+    findings = audit.get("findings", [])
+    total_impact = audit.get("total_estimated_impact", 0)
+    score = audit.get("total_score", 0)
+
+    top = sorted(findings, key=lambda x: x.get("estimated_impact", 0), reverse=True)[:3]
+    top_issues = [f.get("label") for f in top]
+
+    return {
+        "top_issues": top_issues,
+        "monthly_impact": total_impact,
+        "score": score,
+        "narrative": (
+            "The agency is currently operating below benchmark in key performance areas. "
+            f"Primary pressure is driven by {', '.join(top_issues)} which are contributing "
+            "to measurable revenue and operational inefficiencies."
+        )
+    }
+
+
+def build_priority_roadmap(audit):
+    findings = audit.get("findings", [])
+    ordered = sorted(findings, key=lambda x: x.get("estimated_impact", 0), reverse=True)
+
+    roadmap = []
+    for i, f in enumerate(ordered[:3], start=1):
+        roadmap.append({
+            "priority": i,
+            "focus": f.get("label"),
+            "action": f"Address {f.get('label')} to reduce performance gap and improve efficiency"
+        })
+
+    return roadmap
+
+from app.services.cms_data import get_cms_benchmarks, get_agency_cms_profile, extract_performance_metrics, get_percentile_rankings
 
 BENCHMARKS = {
     "denial_rate": {
@@ -149,6 +184,10 @@ def metric_revenue_impact(key, value, benchmark):
 
     return 0
 
+
+
+
+
 def audit_from_inputs(inputs):
     inputs = validate_inputs(inputs)
 
@@ -210,7 +249,19 @@ def audit_from_inputs(inputs):
         "total_score": total
     })
 
+    executive_summary = build_executive_summary({
+        "findings": findings,
+        "total_estimated_impact": total_estimated_impact,
+        "total_score": total
+    })
+
+    roadmap = build_priority_roadmap({
+        "findings": findings
+    })
+
     return {
+        "executive_summary": executive_summary,
+        "roadmap": roadmap,
         "recommended_kits": recommended_kits,
         "recommended_kits": recommended_kits,
         "cms_data": cms,
@@ -257,5 +308,8 @@ def recommend_kits(audit):
             kits.add("compliance")
 
     return list(kits)
+
+
+
 
 
