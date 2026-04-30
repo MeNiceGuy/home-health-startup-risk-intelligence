@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+﻿from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 from app.services.tracking import init_db, get_purchases
 
@@ -38,3 +38,5 @@ def purchases():
     </body>
     </html>
     """
+
+

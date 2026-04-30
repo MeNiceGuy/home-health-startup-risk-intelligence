@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+﻿from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from app.services.compliance_engine import get_state_rules
 
@@ -83,3 +83,5 @@ def launch_dashboard(state: str, completed: str = Query("")):
     </body>
     </html>
     """
+
+

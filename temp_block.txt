@@ -1,4 +1,4 @@
-    return templates.TemplateResponse("operating_report.html", {
+﻿    return templates.TemplateResponse("operating_report.html", {
         "request": request,
         "total": total,
         "financial": financial,
@@ -12,3 +12,4 @@
         "labels": json.dumps(labels),
         "scores": json.dumps(scores)
     })
+

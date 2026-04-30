@@ -67,3 +67,5 @@ def bundle_checkout(slug: str):
     )
 
     return RedirectResponse(session.url)
+
+

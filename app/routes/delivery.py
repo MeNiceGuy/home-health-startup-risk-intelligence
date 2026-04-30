@@ -130,3 +130,5 @@ def deliver_kit(slug: str, session_id: str = Query(None)):
 @router.get("/download")
 def download_generated_kit(file: str):
     return FileResponse(file, filename=file.split("/")[-1])
+
+

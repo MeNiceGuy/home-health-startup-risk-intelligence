@@ -48,3 +48,5 @@ def get_purchases():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+

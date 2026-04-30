@@ -100,3 +100,5 @@ def earnings_dashboard(tenant: str = Query("demo")):
     </body>
     </html>
     """
+
+

@@ -20,3 +20,5 @@ def create_subscription_checkout():
         cancel_url="https://home-health-startup-risk-intelligence.onrender.com/operating-audit/"
     )
     return session.url
+
+

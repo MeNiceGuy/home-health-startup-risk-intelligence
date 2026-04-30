@@ -19,3 +19,5 @@ def create_checkout_session(product_name, amount, slug):
         cancel_url="https://home-health-startup-risk-intelligence.onrender.com/kits/",
     )
     return session.url
+
+

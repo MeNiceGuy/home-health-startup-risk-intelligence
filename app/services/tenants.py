@@ -69,3 +69,5 @@ def get_tenant_by_subdomain(subdomain):
         "subdomain": subdomain,
         "stripe_account": ""
     }
+
+

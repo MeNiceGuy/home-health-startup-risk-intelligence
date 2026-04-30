@@ -38,3 +38,5 @@ def template_checkout(slug: str):
 @router.get("/template-cancel/{slug}")
 def template_cancel(slug: str):
     return RedirectResponse(f"/template-checkout/{slug}")
+
+

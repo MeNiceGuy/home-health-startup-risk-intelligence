@@ -1,4 +1,4 @@
-from fastapi_mail import ConnectionConfig
+﻿from fastapi_mail import ConnectionConfig
 
 conf = ConnectionConfig(
     MAIL_USERNAME = "your_email@gmail.com",
@@ -10,3 +10,5 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS = False,
     USE_CREDENTIALS = True
 )
+
+

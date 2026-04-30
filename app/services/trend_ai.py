@@ -45,3 +45,5 @@ Keep it professional and strategic.
     )
 
     return response.output_text
+
+

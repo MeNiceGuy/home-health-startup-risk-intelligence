@@ -1,4 +1,4 @@
-def generate_bundle(diagnoses):
+﻿def generate_bundle(diagnoses):
     categories = set([d[0] for d in diagnoses])
 
     if len(categories) >= 3:
@@ -18,3 +18,4 @@ def generate_bundle(diagnoses):
         }
 
     return None
+

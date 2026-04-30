@@ -1,4 +1,5 @@
-﻿
+﻿from app.services.cms_percentiles import cms_percentile_benchmarks
+
 def build_executive_summary(audit):
     findings = audit.get("findings", [])
     total_impact = audit.get("total_estimated_impact", 0)
@@ -268,6 +269,7 @@ def audit_from_inputs(inputs):
         "agency_cms_profile": agency_profile,
         "agency_metrics": agency_metrics,
         "percentile_rankings": percentile_rankings,
+        "cms_percentiles": cms_percentile_benchmarks(agency_profile.get("profile", {})) if agency_profile.get("matched") else {},
         "total_score": total,
         "tier": performance_tier(total),
         "categories": categories,
@@ -310,6 +312,60 @@ def recommend_kits(audit):
     return list(kits)
 
 
+
+
+
+
+
+def revenue_opportunity_score(total_score, total_impact, market_analysis):
+    demand = market_analysis.get("demand", {})
+    senior_pct = demand.get("pct_65_plus", 0) or 0
+
+    # Demand score
+    if senior_pct >= 18:
+        demand_score = 100
+    elif senior_pct >= 16:
+        demand_score = 80
+    elif senior_pct >= 14:
+        demand_score = 60
+    else:
+        demand_score = 40
+
+    # Performance gap score: lower audit score = higher opportunity
+    performance_gap_score = max(0, 100 - total_score)
+
+    # Revenue impact score
+    if total_impact >= 50000:
+        impact_score = 100
+    elif total_impact >= 30000:
+        impact_score = 85
+    elif total_impact >= 15000:
+        impact_score = 65
+    elif total_impact >= 5000:
+        impact_score = 45
+    else:
+        impact_score = 25
+
+    final = round((demand_score * 0.30) + (performance_gap_score * 0.35) + (impact_score * 0.35))
+
+    if final >= 80:
+        tier = "High Revenue Opportunity"
+    elif final >= 60:
+        tier = "Moderate Revenue Opportunity"
+    else:
+        tier = "Limited Revenue Opportunity"
+
+    return {
+        "score": final,
+        "tier": tier,
+        "demand_score": demand_score,
+        "performance_gap_score": performance_gap_score,
+        "impact_score": impact_score,
+        "explanation": (
+            "This score combines local senior-market demand, internal performance gaps, "
+            "and estimated monthly revenue impact to estimate recoverable opportunity."
+        )
+    }
 
 
 

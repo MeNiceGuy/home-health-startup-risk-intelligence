@@ -30,3 +30,5 @@ Make it specific, practical, and professional.
         input=prompt
     )
     return response.output_text
+
+

@@ -6,7 +6,7 @@ from app.services.pdf_engine import generate_paid_audit_pdf
 
 router = APIRouter()
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_REPLACE_ME")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "os.getenv("STRIPE_SECRET_KEY")")
 
 def create_checkout(name: str, amount: int):
     session = stripe.checkout.Session.create(
@@ -83,3 +83,5 @@ def download_paid_audit_report():
 @router.get("/consulting-checkout")
 def consulting_checkout():
     return create_checkout("14-Day Home Health Implementation Plan", 299900)
+
+

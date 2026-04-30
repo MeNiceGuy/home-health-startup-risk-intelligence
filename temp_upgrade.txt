@@ -1,4 +1,4 @@
-def diagnosis_html(diagnoses):
+﻿def diagnosis_html(diagnoses):
     html = ""
 
     for area, issue, cause in diagnoses:
@@ -44,3 +44,4 @@ def diagnosis_html(diagnoses):
         """
 
     return html
+

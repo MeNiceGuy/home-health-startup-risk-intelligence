@@ -51,3 +51,5 @@ def revenue_dashboard():
     </html>
     """
     return html
+
+

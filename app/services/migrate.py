@@ -29,3 +29,5 @@ def migrate():
     )""")
 
     con.commit(); con.close()
+
+

@@ -1,4 +1,4 @@
-def generate_roadmap(category):
+﻿def generate_roadmap(category):
     if category == "Operations":
         return [
             ("Week 1","Audit intake and scheduling workflow. Identify delays, missed visits, and lack of ownership."),
@@ -29,3 +29,4 @@ def generate_roadmap(category):
         ("Week 3","Implement internal QA audit process."),
         ("Week 4","Achieve compliance readiness above 90%.")
     ]
+

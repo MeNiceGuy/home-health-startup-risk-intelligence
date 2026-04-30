@@ -68,3 +68,5 @@ def logout():
     resp = RedirectResponse("/", status_code=302)
     resp.delete_cookie("session")
     return resp
+
+

@@ -1,11 +1,11 @@
 ﻿from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.kit_catalog import KIT_PRICES
-import os
-import stripe
+
+
 
 router = APIRouter()
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+
 
 CART = []
 
@@ -91,38 +91,22 @@ def view_cart():
             <a href='/kits'>Continue Shopping</a> |
             <a href='/cart/clear'>Clear Cart</a>
         </div>
-    </body>
+    <a href='/cart/checkout'
+   style='display:inline-block;background:#16a34a;color:white;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:bold;margin-top:20px;'>
+   Checkout Now
+</a>
+</body>
     </html>
     """
 
 @router.get("/bundle-checkout")
+@router.get("/bundle-checkout")
 def bundle_checkout():
-    subtotal, discount, total, discount_rate = cart_totals()
+    from fastapi.responses import RedirectResponse
+    from app.services.stripe_checkout import create_bundle_checkout
 
-    if not CART or total <= 0:
-        return RedirectResponse("/kits")
-
-    names = ", ".join(KIT_PRICES[slug]["name"] for slug in CART if slug in KIT_PRICES)
-
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[{
-            "price_data": {
-                "currency": "usd",
-                "product_data": {
-                    "name": f"Implementation Bundle: {names}",
-                    "description": f"Bundle discount applied: {int(discount_rate*100)}%"
-                },
-                "unit_amount": total,
-            },
-            "quantity": 1,
-        }],
-        mode="payment",
-        success_url="http://127.0.0.1:8000/bundle-success?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url="http://127.0.0.1:8000/cart",
-    )
-
-    return RedirectResponse(session.url)
+    url = create_bundle_checkout(CART)
+    return RedirectResponse(url)
 
 @router.get("/bundle-success", response_class=HTMLResponse)
 def bundle_success(session_id: str = ""):
@@ -142,7 +126,11 @@ def bundle_success(session_id: str = ""):
             <ul>{links}</ul>
             <a href='/upsell/consulting'>Upgrade to Full Implementation</a>
         </div>
-    </body>
+    <a href='/cart/checkout'
+   style='display:inline-block;background:#16a34a;color:white;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:bold;margin-top:20px;'>
+   Checkout Now
+</a>
+</body>
     </html>
     """
 
@@ -163,4 +151,82 @@ def add_bundle(kits: str = ""):
 
     return RedirectResponse("/cart")
 
+
+
+@router.get("/cart/checkout")
+def cart_checkout():
+    from fastapi.responses import RedirectResponse
+    from app.services.stripe_checkout import create_bundle_checkout
+
+    url = create_bundle_checkout(CART)
+    return RedirectResponse(url)
+
+
+@router.get("/payment-success")
+def payment_success(email: str = ""):
+    from fastapi.responses import HTMLResponse
+    from app.services.order_delivery import save_order, build_delivery_html, send_purchase_receipt
+
+    purchased = list(CART)
+    total = save_order(email, purchased)
+
+    try:
+        send_purchase_receipt(email, purchased)
+    except Exception as e:
+        print("Receipt email skipped:", e)
+
+    delivery_html = build_delivery_html(purchased)
+    CART.clear()
+
+    return HTMLResponse(f"""
+    <html>
+    <body style='font-family:Arial;background:#f8fafc;padding:40px;'>
+    <div style='max-width:850px;margin:auto;background:white;padding:35px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);'>
+        <h1>Payment Successful</h1>
+        <p>Your implementation systems are ready.</p>
+        <p><strong>Total Paid:</strong> ${total/100:,.2f}</p>
+
+        <h2>Your Purchased Kits</h2>
+        {delivery_html}
+
+        <a href='/kits'
+           style='display:inline-block;background:#dc2626;color:white;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:bold;'>
+           Return to Kits
+        </a>
+    </div>
+    </body>
+    </html>
+    """)
+
+
+
+
+
+
+@router.get("/simulate-purchase")
+def simulate_purchase(email: str = "test@example.com"):
+    from fastapi.responses import RedirectResponse
+
+    # simulate a full bundle purchase
+    CART.clear()
+    CART.append("full-optimization")
+
+    return RedirectResponse(f"/payment-success?email={email}")
+
+@router.get("/audit-checkout")
+def audit_checkout():
+    from fastapi.responses import RedirectResponse
+    from app.services.stripe_checkout import create_audit_checkout
+
+    url = create_audit_checkout()
+    return RedirectResponse(url)
+
+
+@router.get("/create-checkout-session")
+def create_checkout_session():
+    from fastapi.responses import RedirectResponse
+    from app.services.stripe_checkout import create_paid_audit_checkout
+
+    url = create_paid_audit_checkout()
+    return RedirectResponse(url)
 

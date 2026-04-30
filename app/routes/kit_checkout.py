@@ -30,3 +30,5 @@ def kit_checkout(slug: str):
     )
 
     return RedirectResponse(session.url)
+
+

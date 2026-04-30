@@ -18,3 +18,5 @@ def get_tenant_stripe_account(tenant):
         return row[0]
 
     return ""
+
+

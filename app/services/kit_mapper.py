@@ -1,4 +1,4 @@
-KIT_MAP = {
+﻿KIT_MAP = {
     "No RN clinical supervisor": "leadership",
     "Clinical leadership not qualified": "leadership",
     "Licensing documentation incomplete": "license",
@@ -12,3 +12,5 @@ KIT_MAP = {
     "No patient intake process": "onboarding",
     "No understanding of reimbursement timeline": "license"
 }
+
+

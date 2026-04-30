@@ -13,3 +13,5 @@ def checkout(slug: str):
 
     url = create_checkout_session(kit["name"], kit["price"], slug)
     return RedirectResponse(url)
+
+

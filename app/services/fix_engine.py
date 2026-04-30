@@ -1,4 +1,4 @@
-def get_fix_instructions(missing_items):
+﻿def get_fix_instructions(missing_items):
     fixes = {
         "No RN clinical supervisor (cannot operate legally)": "Secure a licensed RN to act as clinical supervisor. This is a legal requirement for operation.",
         "Clinical leadership not qualified": "Ensure clinical leadership meets Virginia state qualification standards.",
@@ -15,3 +15,5 @@ def get_fix_instructions(missing_items):
     }
 
     return [fixes.get(item, "Define a corrective action plan.") for item in missing_items]
+
+

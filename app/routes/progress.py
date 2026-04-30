@@ -113,3 +113,5 @@ def save_progress(email: str = Form(...), tasks: list[str] = Form([])):
     conn.close()
 
     return RedirectResponse(f"/progress/?email={email}", status_code=303)
+
+

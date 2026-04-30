@@ -49,3 +49,5 @@ def consultant_subscription_checkout(
     )
 
     return RedirectResponse(session.url, status_code=303)
+
+

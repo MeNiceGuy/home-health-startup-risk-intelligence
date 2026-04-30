@@ -56,3 +56,5 @@ def get_client_timeline(tenant, client_name):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+

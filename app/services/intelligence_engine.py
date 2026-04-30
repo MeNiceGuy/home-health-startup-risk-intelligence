@@ -1,4 +1,4 @@
-def generate_intelligence(result):
+﻿def generate_intelligence(result):
     score = result["risk_score"]
     tier = result["risk_tier"]
     missing = result["missing_items"]
@@ -38,3 +38,5 @@ def generate_intelligence(result):
         "recommended_kits": list(dict.fromkeys(kit_recommendations)),
         "business_impact": "Unresolved gaps may delay licensing, weaken inspection readiness, increase compliance exposure, and slow revenue generation."
     }
+
+

@@ -81,3 +81,5 @@ async def stripe_webhook(request: Request):
         save_earnings(session)
 
     return {"status": "success"}
+
+

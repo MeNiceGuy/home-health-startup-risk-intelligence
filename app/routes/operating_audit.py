@@ -46,6 +46,23 @@ def build_expected_outcomes(findings):
 
 @router.get("/operating-audit/", response_class=HTMLResponse)
 async def operating_audit(request: Request):
+    token = request.query_params.get("access", "")
+    dev = request.query_params.get("dev", "")
+
+    if token != "paid-audit" and dev != "1":
+        return HTMLResponse("""
+        <html>
+        <body style='font-family:Arial;background:#f8fafc;padding:40px;'>
+        <div style='max-width:700px;margin:auto;background:white;padding:35px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);'>
+            <h1>Full Audit Locked</h1>
+            <p>The full performance audit requires payment to access.</p>
+            <a href='/pricing' style='display:inline-block;background:#dc2626;color:white;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:bold;'>
+                View Pricing
+            </a>
+        </div>
+        </body>
+        </html>
+        """)
     params = request.query_params
 
     inputs = {
@@ -56,10 +73,16 @@ async def operating_audit(request: Request):
         "staff_turnover": params.get("staff_turnover", 32),
         "compliance_findings": params.get("compliance_findings", 4),
         "agency_name": params.get("agency") or "",
-        "state": params.get("state") or ""
+        "state": params.get("state") or "",
+        "lead_id": params.get("lead_id") or "",
+        "email": params.get("email") or ""
     }
 
     audit = audit_from_inputs(inputs)
+
+    if inputs.get("lead_id"):
+        from app.services.lead_tracking import log_lead_event
+        log_lead_event(inputs.get("lead_id"), inputs.get("agency_name"), inputs.get("email"), "full_audit_clicked")
     findings = [f for f in audit.get("findings", []) if isinstance(f, dict)]
 
     recommended = ",".join(audit.get("recommended_kits", []))
@@ -150,7 +173,7 @@ async def operating_audit(request: Request):
 
     <button class='cta' style='border:none;background:#111827;cursor:pointer;'>Email Executive PDF</button>
 </form>
-<a class='cta' style='background:#111827;margin-left:10px;' href='/download/audit-pdf?agency={inputs["agency_name"]}&state={inputs["state"]}&denial_rate={inputs["denial_rate"]}&ar_days={inputs["ar_days"]}&intake_time={inputs["intake_time"]}&missed_visits={inputs["missed_visits"]}&staff_turnover={inputs["staff_turnover"]}&compliance_findings={inputs["compliance_findings"]}'>Download Executive PDF</a>
+<a class='cta' style='background:#111827;margin-left:10px;' href='/download/audit-pdf?agency={inputs["agency_name"]}&state={inputs["state"]}&denial_rate={inputs["denial_rate"]}&ar_days={inputs["ar_days"]}&intake_time={inputs["intake_time"]}&missed_visits={inputs["missed_visits"]}&staff_turnover={inputs["staff_turnover"]}&compliance_findings={inputs["compliance_findings"]}&email={inputs.get("email","")}'>Download PDF + Save Report</a>
         </div>
 
         <div class='grid'>{category_cards}</div>
@@ -190,12 +213,39 @@ async def operating_audit(request: Request):
         </div>
 
         <div class='panel'>
-            <h2>Agency-Level CMS Match</h2>
+    <h2>CMS Percentile Benchmarking</h2>
+    <p>This section compares matched CMS performance fields against other CMS agencies when usable numeric fields are available.</p>
+    {
+        "".join([
+            f"<p><strong>{k}:</strong> {v.get('value')} | Percentile: {v.get('percentile')}% | Sample: {v.get('sample_size')}</p>"
+            for k, v in audit.get("cms_percentiles", {}).items()
+        ]) or "<p>Percentile benchmarking unavailable for this agency match.</p>"
+    }
+</div>
+
+<div class='panel'>
+    <h2>Agency-Level CMS Match</h2>
             {agency_html}
         </div>
 
-        <div class='panel'>
-            <h2>Top Revenue Leakage Drivers</h2>
+        <div class='panel' style='border:3px solid #f59e0b;background:#fff7ed;'>
+    <h2>Recommended Corrective System</h2>
+    <p><strong>Based on this audit, your agency should prioritize the Full Agency Optimization System.</strong></p>
+    <p>
+        This system is designed to address the revenue-cycle, intake, staffing, operational,
+        and compliance gaps identified in this report.
+    </p>
+    <p><strong>Estimated Monthly Revenue at Risk:</strong> <span class='loss'>${audit.get("total_estimated_impact",0):,}</span></p>
+    <p>
+        If even a portion of this leakage is reduced, the implementation system can pay for itself quickly.
+    </p>
+    <a class='cta' style='background:#f59e0b;color:#111827;' href='/cart/add/full-optimization'>
+        Get Full Agency Optimization System
+    </a>
+</div>
+
+<div class='panel'>
+    <h2>Top Revenue Leakage Drivers</h2>
             {top_leaks}
         </div>
 
@@ -246,6 +296,11 @@ def download_audit_pdf(
     }
 
     path = generate_consulting_audit_pdf(inputs, "audit_report.pdf")
+
+    if email:
+        from app.services.lead_tracking import log_lead_event
+        lead_id = email.replace("@","_").replace(".","_")
+        log_lead_event(lead_id, agency, email, "pdf_downloaded")
     return FileResponse(path, media_type="application/pdf", filename="home_health_performance_audit.pdf")
 
 
@@ -277,11 +332,29 @@ def send_audit_pdf(
     }
 
     path = generate_consulting_audit_pdf(inputs, "audit_report.pdf")
+
+    if email:
+        from app.services.lead_tracking import log_lead_event
+        lead_id = email.replace("@","_").replace(".","_")
+        log_lead_event(lead_id, agency, email, "pdf_downloaded")
     send_pdf_email(email, path)
+
+    from app.services.lead_tracking import log_lead_event
+    log_lead_event(email.replace("@","_").replace(".","_"), agency, email, "pdf_requested")
 
     return RedirectResponse(
         f"/operating-audit/?agency={agency}&state={state}&denial_rate={denial_rate}&ar_days={ar_days}&intake_time={intake_time}&missed_visits={missed_visits}&staff_turnover={staff_turnover}&compliance_findings={compliance_findings}&sent=1",
         status_code=303
     )
+
+
+
+
+
+
+
+
+
+
 
 

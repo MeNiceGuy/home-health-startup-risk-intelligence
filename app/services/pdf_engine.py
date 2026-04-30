@@ -1,123 +1,131 @@
-﻿from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+﻿from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from app.services.benchmark_audit import audit_from_inputs
 
+BRAND = "Home Health Performance Intelligence"
 
-def build_recommended_slugs(audit):
-    impact = audit.get("total_estimated_impact", 0)
-    score = audit.get("total_score", 100)
+def add_header_footer(canvas, doc):
+    canvas.saveState()
+    width, height = letter
 
-    if impact >= 30000 or score < 65:
-        return ["full-optimization"]
+    canvas.setFont("Helvetica-Bold", 9)
+    canvas.setFillColor(colors.HexColor("#991b1b"))
+    canvas.drawString(40, height - 28, BRAND)
 
-    keys = [f.get("key") for f in audit.get("findings", []) if isinstance(f, dict)]
-    slugs = []
+    canvas.setFont("Helvetica", 8)
+    canvas.setFillColor(colors.HexColor("#6b7280"))
+    canvas.drawRightString(width - 40, height - 28, "Revenue Risk & Performance Audit")
+    canvas.drawString(40, 24, "Decision-support report | Not legal, clinical, billing, or regulatory advice")
+    canvas.drawRightString(width - 40, 24, f"Page {doc.page}")
 
-    if "denial_rate" in keys or "ar_days" in keys:
-        slugs.append("revenue")
-    if "intake_time" in keys or "missed_visits" in keys:
-        slugs.append("operations")
-    if "staff_turnover" in keys:
-        slugs.append("hiring")
-    if "compliance_findings" in keys:
-        slugs.append("compliance")
+    canvas.restoreState()
 
-    return list(dict.fromkeys(slugs))
-
-
-def build_recommended_solutions(audit):
-    slugs = build_recommended_slugs(audit)
-
-    names = {
-        "revenue": "Revenue Cycle Policy Pack",
-        "operations": "Operations Workflow System",
-        "hiring": "Hiring & Onboarding Kit",
-        "compliance": "Compliance Readiness Pack",
-        "full-optimization": "Full Agency Optimization System (Recommended)"
-    }
-
-    return [names.get(s, s) for s in slugs]
-
-
-def generate_consulting_audit_pdf(inputs, output_path="audit_report.pdf"):
-    audit = audit_from_inputs(inputs)
-    solutions = build_recommended_solutions(audit)
-    slugs = build_recommended_slugs(audit)
-
-    checkout_url = "http://127.0.0.1:8000/cart/add-bundle?kits=" + ",".join(slugs)
-
-    doc = SimpleDocTemplate(output_path, pagesize=letter)
+def generate_audit_pdf(audit, output_path="audit_report.pdf"):
     styles = getSampleStyleSheet()
     story = []
 
-    story.append(Paragraph("Home Health Performance Audit", styles["Title"]))
-    story.append(Spacer(1, 10))
+    def H(txt):
+        story.append(Paragraph(f"<b>{txt}</b>", styles["Heading2"]))
+        story.append(Spacer(1, 10))
 
-    story.append(Paragraph("Executive Summary", styles["Heading2"]))
-    story.append(Paragraph(
-        audit.get("executive_summary", {}).get("narrative", "Audit summary unavailable."),
-        styles["BodyText"]
-    ))
-    story.append(Spacer(1, 10))
+    def P(txt):
+        story.append(Paragraph(txt, styles["Normal"]))
+        story.append(Spacer(1, 8))
 
-    story.append(Paragraph("Key Metrics", styles["Heading2"]))
-    story.append(Paragraph(f"Total Score: {audit.get('total_score', 0)}%", styles["BodyText"]))
-    story.append(Paragraph(f"Performance Tier: {audit.get('tier', 'N/A')}", styles["BodyText"]))
-    story.append(Paragraph(f"Estimated Monthly Impact: ${audit.get('total_estimated_impact', 0):,}", styles["BodyText"]))
-    story.append(Spacer(1, 10))
+    def KPI(label, value):
+        t = Table([[label, value]], colWidths=[250, 230])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (1,0), colors.whitesmoke),
+            ("BOX", (0,0), (-1,-1), 1, colors.HexColor("#d1d5db")),
+            ("PADDING", (0,0), (-1,-1), 8),
+            ("FONTNAME", (0,0), (0,0), "Helvetica-Bold"),
+        ]))
+        story.append(t)
+        story.append(Spacer(1, 8))
 
-    story.append(Paragraph("Priority Roadmap", styles["Heading2"]))
-    for r in audit.get("roadmap", []):
-        story.append(Paragraph(
-            f"Priority {r['priority']}: {r['focus']} - {r['action']}",
-            styles["BodyText"]
-        ))
-    story.append(Spacer(1, 10))
+    impact = audit.get("total_estimated_impact", 0)
+    ro = audit.get("revenue_opportunity", {})
+    market = audit.get("market_analysis", {})
+    demand = market.get("demand", {})
+    cms = audit.get("cms_percentiles", {})
 
-    story.append(Paragraph("Implementation Timeline", styles["Heading2"]))
-    timeline = [
-        "Week 1: Stabilize the highest revenue leakage area.",
-        "Week 2: Implement workflow controls and accountability checks.",
-        "Week 3: Strengthen staffing, compliance, and documentation processes.",
-        "Week 4: Review results, monitor KPIs, and adjust operating cadence."
-    ]
-    for item in timeline:
-        story.append(Paragraph(item, styles["BodyText"]))
-    story.append(Spacer(1, 10))
+    # COVER / ONE-PAGE EXECUTIVE SUMMARY
+    story.append(Paragraph("<b>Revenue Risk & Performance Audit</b>", styles["Title"]))
+    story.append(Spacer(1, 14))
+    P("Prepared using CMS benchmark data, market demand indicators, and agency-specific operational inputs.")
 
-    story.append(Paragraph("Expected Outcomes", styles["Heading2"]))
-    story.append(Paragraph(
-        "If implemented effectively, the agency can target improved revenue-cycle discipline, reduced leakage, stronger intake execution, and better compliance readiness.",
-        styles["BodyText"]
-    ))
-    story.append(Spacer(1, 10))
+    H("One-Page Executive Summary")
+    KPI("Estimated Monthly Revenue at Risk", f"${impact:,}")
+    KPI("Revenue Opportunity Score", f"{ro.get('score','N/A')}/100")
+    KPI("Opportunity Tier", ro.get("tier","N/A"))
+    KPI("Senior Market Demand", f"{demand.get('pct_65_plus','N/A')}% age 65+")
+    KPI("Recommended System", "Full Agency Optimization System")
 
-    story.append(Paragraph("Recommended Solutions", styles["Heading2"]))
-    for s in solutions:
-        story.append(Paragraph(f"- {s}", styles["BodyText"]))
-    story.append(Spacer(1, 10))
+    P("<b>Executive Interpretation:</b> The agency shows performance indicators that may signal preventable revenue leakage, operational drag, and unrealized market opportunity.")
+    P("<b>Recommended Next Step:</b> Prioritize correction of the highest-impact revenue drivers and implement the Full Agency Optimization System.")
+    P("<b>Important Guardrail:</b> This report supports business decision-making only. Findings should be validated against agency records, payer requirements, and applicable regulations.")
 
-    story.append(Paragraph("Recommended Next Step", styles["Heading2"]))
-    story.append(Paragraph(
-        f"<a href='{checkout_url}'>Click here to add the recommended implementation bundle to cart</a>",
-        styles["BodyText"]
-    ))
-    story.append(Spacer(1, 10))
+    story.append(PageBreak())
 
-    story.append(Paragraph("Disclaimer", styles["Heading2"]))
-    story.append(Paragraph(
-        "This audit is a decision-support tool and not a regulatory determination, legal opinion, financial guarantee, or official CMS assessment.",
-        styles["BodyText"]
-    ))
+    # FULL REPORT
+    H("Executive Summary")
+    P(f"Estimated monthly revenue at risk: <b>${impact:,}</b>. This indicates potential leakage driven by operational inefficiencies and workflow gaps.")
 
-    doc.build(story)
+    H("Revenue Opportunity Score")
+    KPI("Score", f"{ro.get('score','N/A')}/100")
+    KPI("Tier", ro.get("tier","N/A"))
+    P(ro.get("explanation",""))
+
+    H("Market Demand & Performance Positioning")
+    P(market.get("insight","Market demand data unavailable."))
+    KPI("Senior Population", f"{demand.get('pct_65_plus','N/A')}%")
+
+    if cms:
+        H("CMS Benchmark Positioning")
+        for k, v in cms.items():
+            KPI(k, f"{v.get('value')} | {v.get('percentile')} percentile | n={v.get('sample_size')}")
+
+    H("Primary Revenue Leakage Drivers")
+    for f in audit.get("findings", []):
+        if isinstance(f, dict):
+            P(f"- <b>{f.get('label','Finding')}:</b> {f.get('risk','N/A')} | Impact: ${f.get('estimated_impact',0):,}")
+        else:
+            P(f"- {f}")
+
+    H("Priority Action Roadmap")
+    P("1. Address the highest-impact revenue drivers first.")
+    P("2. Stabilize intake and billing workflows.")
+    P("3. Strengthen staffing and execution consistency.")
+    P("4. Implement operational controls to prevent recurrence.")
+
+    H("Recommended Action")
+    P("Implement the <b>Full Agency Optimization System</b> to correct the gaps identified in this report.")
+    P("If even a portion of the estimated revenue loss is recovered, the system can pay for itself quickly.")
+    P("Activate implementation: http://127.0.0.1:8000/cart/add/full-optimization")
+
+    H("Important Note")
+    P("This report is based on publicly available CMS data and user-provided inputs. It is intended for operational insight only and does not constitute legal, clinical, billing, or regulatory advice.")
+
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=letter,
+        rightMargin=42,
+        leftMargin=42,
+        topMargin=55,
+        bottomMargin=45
+    )
+    doc.build(story, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
     return output_path
 
-
-def generate_audit_pdf(*args, **kwargs):
-    return generate_consulting_audit_pdf({}, "audit_report.pdf")
-
-
 def generate_paid_audit_pdf(output_path="audit_report.pdf", data=None):
-    return generate_consulting_audit_pdf(data or {}, output_path)
+    from app.services.benchmark_audit import audit_from_inputs
+    audit = audit_from_inputs(data or {})
+    return generate_audit_pdf(audit, output_path)
+
+def generate_consulting_audit_pdf(inputs, output_path="audit_report.pdf"):
+    from app.services.benchmark_audit import audit_from_inputs
+    audit = audit_from_inputs(inputs)
+    return generate_audit_pdf(audit, output_path)
+
+

@@ -1,4 +1,4 @@
-def template_recommendations(issue):
+﻿def template_recommendations(issue):
     issue = issue.lower()
 
     if "denial" in issue or "billing" in issue:
@@ -23,3 +23,4 @@ def template_recommendations(issue):
         {"name":"Compliance Policy Pack","price":"$199","link":"/templates/compliance"},
         {"name":"Incident Reporting System","price":"$129","link":"/templates/incidents"}
     ]
+

@@ -36,3 +36,5 @@ def generate_template_pdf(template_name, content, client_data):
 
     pdf.build(story)
     return path
+
+

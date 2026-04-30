@@ -165,3 +165,5 @@ def generate_regulatory_intelligence(state, agency_type, payer_model, answers):
         "operating_requirements": state_rules["operating_requirements"],
         "federal_requirements": federal["requirements"] if medicare else []
     }
+
+

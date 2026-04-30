@@ -1,6 +1,6 @@
 ﻿import os
 import sqlite3
-import psycopg
+# import psycopg (disabled)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 USE_POSTGRES = bool(DATABASE_URL)
@@ -102,3 +102,6 @@ def get_dashboard_data():
 
     conn.close()
     return subs, scores
+
+
+

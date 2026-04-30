@@ -33,3 +33,5 @@ def subscription_success(session_id: str = Query(None)):
     </body>
     </html>
     """
+
+

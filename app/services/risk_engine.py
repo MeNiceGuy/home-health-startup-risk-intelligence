@@ -1,4 +1,4 @@
-def calculate_risk_score(answers: dict):
+﻿def calculate_risk_score(answers: dict):
     base_score = 100
 
     penalties = {
@@ -58,3 +58,5 @@ def calculate_risk_score(answers: dict):
         "risk_tier": tier,
         "missing_items": missing_items
     }
+
+

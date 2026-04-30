@@ -37,3 +37,5 @@ def create_free_tenant(
     conn.close()
 
     return RedirectResponse(f"/consultant/dashboard?tenant={subdomain}", status_code=303)
+
+

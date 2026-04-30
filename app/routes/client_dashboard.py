@@ -30,3 +30,5 @@ def client_dashboard(email: str = Query("client@example.com")):
     </body>
     </html>
     """
+
+

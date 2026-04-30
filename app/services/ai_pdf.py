@@ -36,3 +36,5 @@ def generate_ai_kit_pdf(client_data, kit_name, kit_content):
 
     doc.build(story)
     return filename
+
+

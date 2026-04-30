@@ -96,3 +96,5 @@ def view_bookings():
 
     html += "</table>"
     return html
+
+
