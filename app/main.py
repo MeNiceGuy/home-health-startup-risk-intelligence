@@ -22,6 +22,7 @@ def include_router_safe(module_path: str, router_name: str = "router"):
         print(f"Router skipped: {module_path} -> {e}")
 
 ROUTERS = [
+    "app.routes.autopilot",
     "app.routes.cart",
     "app.routes.suppression_admin",
     "app.routes.enrichment",
@@ -52,10 +53,18 @@ def homepage():
                style="display:inline-block;background:white;color:#991b1b;padding:17px 30px;border-radius:12px;text-decoration:none;font-weight:bold;margin-top:32px;font-size:17px;">
                See My Revenue Risk
             </a>
+                    <br>
+            <a href="/control-center"
+               style="display:inline-block;background:#111827;color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:bold;margin-top:18px;border:1px solid white;">
+               Control Center
+            </a>
         </section>
     </body>
     </html>
     """
+
+
+
 
 
 
