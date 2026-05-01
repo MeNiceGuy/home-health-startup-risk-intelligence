@@ -22,6 +22,7 @@ def include_router_safe(module_path: str, router_name: str = "router"):
         print(f"Router skipped: {module_path} -> {e}")
 
 ROUTERS = [
+    "app.routes.cart",
     "app.routes.suppression_admin",
     "app.routes.enrichment",
     "app.routes.followups",
@@ -55,6 +56,7 @@ def homepage():
     </body>
     </html>
     """
+
 
 
 
